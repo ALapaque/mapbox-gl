@@ -10,24 +10,22 @@ export type MapboxPosition = {
 
 export type MapboxState = {
   base: MapboxPosition,
-  current: MapboxPosition
+  marker: MapboxPosition,
+  mapView: MapboxPosition,
+}
+
+const defaultPosition: MapboxPosition = {
+  lng: 4.586389684507004,
+  lat: 50.730783284021605,
+  bearing: 0,
+  pitch: 0,
+  zoom: 15
 }
 
 const defaultState = (): MapboxState => ({
-  base: {
-    lng: 4.586389684507004,
-    lat: 50.730783284021605,
-    bearing: 0,
-    pitch: 0,
-    zoom: 15
-  },
-  current: {
-    lng: 4.586389684507004,
-    lat: 50.730783284021605,
-    bearing: 0,
-    pitch: 0,
-    zoom: 15
-  }
+  base: defaultPosition,
+  marker: defaultPosition,
+  mapView: defaultPosition
 })
 
 const id: string = 'mapbox-state'

@@ -7,7 +7,7 @@ import type { IsochroneState } from '@/stores/isochrone'
 import useMapboxState from '@/stores/mapbox'
 
 // @ts-ignore
-import mapboxgl, { type AnySourceImpl, GeoJSONSource, GeoJSONSourceOptions, Map, Marker } from 'mapbox-gl'
+import mapboxgl, { type AnySourceImpl, GeoJSONSource, Map, Marker } from 'mapbox-gl'
 import { storeToRefs } from 'pinia'
 import { defineComponent, onMounted, onUnmounted, type PropType, ref, watch } from 'vue'
 
@@ -19,6 +19,10 @@ export default defineComponent({
       type: Object,
       required: true
     },
+    markerPosition: {
+      type: Object,
+      required: true
+    },
     isochroneValues: {
       type: Object as PropType<IsochroneState['data']>
     }
@@ -26,12 +30,12 @@ export default defineComponent({
   emits: [ 'update:modelValue', 'map:loaded' ],
   setup(props, { emit }) {
     const mapboxState = useMapboxState()
-    const { current } = storeToRefs(mapboxState)
+    const { marker } = storeToRefs(mapboxState)
     const mapContainer = ref<HTMLElement | null>(null)
     const map = ref<Map | undefined>()
 
     watch(() => props.modelValue, (next) => {
-      const curr = getLocation()
+      const curr = getMapView()
       const mapInstance = map.value
 
       if (!mapInstance || !curr) {
@@ -76,10 +80,10 @@ export default defineComponent({
 
       map.value.on('load', handleOnLoad)
 
-      map.value.on('move', updateLocation)
-      map.value.on('zoom', updateLocation)
-      map.value.on('rotate', updateLocation)
-      map.value.on('pitch', updateLocation)
+      map.value.on('move', updateMapView)
+      map.value.on('zoom', updateMapView)
+      map.value.on('rotate', updateMapView)
+      map.value.on('pitch', updateMapView)
     })
 
     onUnmounted(() => {
@@ -91,7 +95,7 @@ export default defineComponent({
       map.value = undefined
     })
 
-    const getLocation = () => {
+    const getMapView = () => {
       if (!map.value) {
         return
       }
@@ -104,22 +108,22 @@ export default defineComponent({
       }
     }
 
-    const updateLocation = () => {
-      emit('update:modelValue', getLocation())
+    const updateMapView = () => {
+      emit('update:modelValue', getMapView())
     }
 
     const createCurrentPositionMarker = () => {
-      const marker: Marker = new Marker({
+      const mapMarker: Marker = new Marker({
         color: '#314ccd',
         draggable: true
       })
 
-      marker.setLngLat({ lat: current.value.lat, lng: current.value.lng }).addTo(map.value!)
-      marker.on('dragend', () => {
-        const currentMarkerPosition = marker.getLngLat()
+      mapMarker.setLngLat({ lat: marker.value.lat, lng: marker.value.lng }).addTo(map.value!)
+      mapMarker.on('dragend', () => {
+        const currentMarkerPosition = mapMarker.getLngLat()
 
-        current.value.lat = currentMarkerPosition.lat
-        current.value.lng = currentMarkerPosition.lng
+        marker.value.lat = currentMarkerPosition.lat
+        marker.value.lng = currentMarkerPosition.lng
       })
     }
 
