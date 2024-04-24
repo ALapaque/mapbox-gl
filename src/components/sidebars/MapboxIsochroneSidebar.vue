@@ -35,34 +35,34 @@
           <div class="toggle toggle--active-null toggle--null">Driving</div>
         </label>
       </div>
-      <h4 class="txt-m txt-bold mb6 color-gray">Choose a maximum duration:</h4>
+      <h4 class="txt-m txt-bold mb6 color-gray">Choose a maximum distance:</h4>
       <div class="mb12 mr12 toggle-group align-center">
         <label class="toggle-container">
           <input
-              v-model='settings.duration'
-              :checked="settings.duration === 10"
+              v-model='settings.distance'
+              :checked="settings.distance === 1000"
               name="duration"
               type="radio"
-              value="10" />
-          <div class="toggle toggle--active-null toggle--null">10 min</div>
+              value="1000" />
+          <div class="toggle toggle--active-null toggle--null">1 km</div>
         </label>
         <label class="toggle-container">
           <input
-              v-model='settings.duration'
-              :checked="settings.duration === 20"
+              v-model='settings.distance'
+              :checked="settings.distance === 5000"
               name="duration"
               type="radio"
-              value="20" />
-          <div class="toggle toggle--active-null toggle--null">20 min</div>
+              value="5000" />
+          <div class="toggle toggle--active-null toggle--null">5 km</div>
         </label>
         <label class="toggle-container">
           <input
-              v-model='settings.duration'
-              :checked="settings.duration === 30"
+              v-model='settings.distance'
+              :checked="settings.distance === 10000"
               name="duration"
               type="radio"
-              value="30" />
-          <div class="toggle toggle--active-null toggle--null">30 min</div>
+              value="10000" />
+          <div class="toggle toggle--active-null toggle--null">10 km</div>
         </label>
       </div>
     </form>
@@ -72,18 +72,12 @@
 <script lang='ts'>
 import useIsochroneState from '@/stores/isochrone'
 import { storeToRefs } from 'pinia'
-import { defineComponent, watch } from 'vue'
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   setup() {
     const isochroneState = useIsochroneState()
     const { settings } = storeToRefs(isochroneState)
-
-    watch(settings, async() => {
-      console.log('MapboxIsochroneSidebar > settings changed :: ', settings)
-
-      await isochroneState.getIsochroneValue()
-    }, { deep: true })
 
     return {
       settings

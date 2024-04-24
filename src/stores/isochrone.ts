@@ -7,7 +7,7 @@ export type IsochroneState = {
   loading: boolean,
   settings: {
     mode: 'walking' | 'cycling' | 'driving',
-    duration: number
+    distance: number
   },
   api: {
     baseUrl: string,
@@ -19,7 +19,7 @@ const defaultState = (): IsochroneState => ({
   loading: false,
   settings: {
     mode: 'walking',
-    duration: 10
+    distance: 1000
   },
   data: undefined,
   api: {
@@ -40,7 +40,7 @@ const useIsochroneState = defineStore(id, {
 
       try {
         const query = await fetch(
-          `${this.api.baseUrl}${this.settings.mode}/${mapboxState.marker.lng},${mapboxState.marker.lat}?contours_minutes=${this.settings.duration}&polygons=true&access_token=${this.api.accessToken}`,
+          `${this.api.baseUrl}${this.settings.mode}/${mapboxState.marker.lng},${mapboxState.marker.lat}?contours_meters=${this.settings.distance}&polygons=true&access_token=${this.api.accessToken}`,
           { method: 'GET' }
         )
         const data: any = await query.json()

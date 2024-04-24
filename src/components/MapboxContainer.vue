@@ -27,9 +27,9 @@ export default defineComponent({
     const mapboxState = useMapboxState()
     const { marker, mapView: currentPosition } = storeToRefs(mapboxState)
     const isochroneState = useIsochroneState()
-    const { data: isochroneData } = storeToRefs(isochroneState)
+    const { data: isochroneData, settings } = storeToRefs(isochroneState)
 
-    watch(marker, async() => {
+    watch([ marker, settings ], async() => {
       await isochroneState.getIsochroneValue()
     }, { deep: true })
 
