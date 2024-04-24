@@ -99,8 +99,7 @@ export default defineComponent({
       }
     }
 
-    const handleOnLoad = () => {
-      console.log('handleOnload', map)
+    const createIsochroneView = () => {
       if (!map.value) {
         return
       }
@@ -128,6 +127,14 @@ export default defineComponent({
           },
           'poi-label'
       )
+
+      void isochroneState.getIsochroneValue()
+    }
+
+    const handleOnLoad = () => {
+      console.log('handleOnload', map)
+
+      createIsochroneView()
     }
 
     return {
