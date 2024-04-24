@@ -3,6 +3,7 @@
 </template>
 
 <script lang="ts">
+// @ts-ignore
 import mapboxgl from 'mapbox-gl'
 import { defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 
@@ -17,12 +18,16 @@ export default defineComponent({
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    const mapContainer = ref(null)
-    const map = ref<mapboxgl.Map>()
+    const mapContainer = ref<HTMLElement | null>(null)
+    const map = ref<mapboxgl.Map | undefined>()
 
     watch(() => props.modelValue, (next) => {
       const curr = getLocation()
       const mapInstance = map.value
+
+      if (!mapInstance || ! curr) {
+        return
+      }
 
       if (curr.lng !== next.lng || curr.lat !== next.lat)
         mapInstance.setCenter({ lng: next.lng, lat: next.lat })
@@ -32,6 +37,10 @@ export default defineComponent({
     }, { deep: true })
 
     onMounted(() => {
+      if (!mapContainer.value) {
+        return
+      }
+
       const { lng, lat, zoom, bearing, pitch } = props.modelValue
 
       map.value = new mapboxgl.Map({
@@ -53,11 +62,19 @@ export default defineComponent({
     })
 
     onUnmounted(() => {
+      if (!map.value) {
+        return
+      }
+
       map.value.remove()
-      map.value = null
+      map.value = undefined
     })
 
     function getLocation() {
+      if (!map.value) {
+        return
+      }
+
       return {
         ...map.value.getCenter(),
         bearing: map.value.getBearing(),
