@@ -21,21 +21,30 @@ import MapboxGL from '@/components/MapboxGL.vue'
 import { defineComponent, ref } from 'vue';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
+export type Position = {
+  lng: number,
+  lat: number,
+  bearing: number,
+  pitch: number,
+  zoom: number
+}
+
 export default defineComponent({
   components: {
     MapboxGL,
   },
   setup() {
-    const location = ref({
-      lng: -71.224518,
-      lat: 42.213995,
+    const basePosition: Position = {
+      lng: 4.586389684507004,
+      lat: 50.730783284021605,
       bearing: 0,
       pitch: 0,
-      zoom: 9
-    })
+      zoom: 15
+    }
+    const location = ref<Position>(basePosition)
 
     const resetLocation = () => {
-      location.value = { lng: -71.224518, lat: 42.213995, zoom: 9, pitch: 0, bearing: 0 }
+      location.value = basePosition
     }
 
     const handleOnChange = (value: any) => {
