@@ -17,6 +17,7 @@ import useMapboxState from '@/stores/mapbox'
 import { storeToRefs } from 'pinia'
 import { defineComponent, watch } from 'vue'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 
 export default defineComponent({
   components: {
