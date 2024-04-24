@@ -1,6 +1,6 @@
+import type { IsochroneData } from '@/models/isochrone/IsochroneData'
 import useMapboxState from '@/stores/mapbox'
 // @ts-ignore
-import { GeoJSONSourceOptions } from 'mapbox-gl'
 import { defineStore } from 'pinia'
 
 export type IsochroneState = {
@@ -9,11 +9,12 @@ export type IsochroneState = {
     mode: 'walking' | 'cycling' | 'driving',
     distance: number
   },
+  data: IsochroneData | undefined,
   api: {
     baseUrl: string,
     accessToken: string
   }
-} & Pick<GeoJSONSourceOptions, 'data'>
+}
 
 const defaultState = (): IsochroneState => ({
   loading: false,
@@ -43,7 +44,7 @@ const useIsochroneState = defineStore(id, {
           `${this.api.baseUrl}${this.settings.mode}/${mapboxState.marker.lng},${mapboxState.marker.lat}?contours_meters=${this.settings.distance}&polygons=true&access_token=${this.api.accessToken}`,
           { method: 'GET' }
         )
-        const data: any = await query.json()
+        const data: IsochroneData = await query.json()
 
         if (!data) {
           this.data = undefined
@@ -52,7 +53,6 @@ const useIsochroneState = defineStore(id, {
         }
 
         this.data = data
-        console.log('getIsochroneValue :: ', data)
         return data
       } catch (_) {
 

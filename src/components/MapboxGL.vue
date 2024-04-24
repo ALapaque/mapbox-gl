@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-import type { IsochroneState } from '@/stores/isochrone'
+import type { IsochroneData } from '@/models/isochrone/IsochroneData'
 import useMapboxState from '@/stores/mapbox'
 // @ts-ignore
 import MapboxGLDraw from '@mapbox/mapbox-gl-draw'
@@ -25,7 +25,7 @@ export default defineComponent({
       required: true
     },
     isochroneValues: {
-      type: Object as PropType<IsochroneState['data']>
+      type: Object as PropType<IsochroneData>
     }
   },
   emits: [ 'update:modelValue', 'map:loaded' ],
@@ -41,13 +41,7 @@ export default defineComponent({
         return
       }
 
-      const source: AnySourceImpl = map.value?.getSource('isochrone')
-
-      if (!source) {
-        return
-      }
-
-      (source as GeoJSONSource).setData(data as any)
+      createIsochroneLayers(data)
     }, { deep: true })
 
     onMounted(() => {
@@ -122,320 +116,62 @@ export default defineComponent({
         controls: {
           'combine_features': false,
           'uncombine_features': false
-        },
-        styles: [
-          // default themes provided by MB Draw
-          // default themes provided by MB Draw
-          // default themes provided by MB Draw
-          // default themes provided by MB Draw
-
-
-          {
-            'id': 'gl-draw-polygon-fill-inactive',
-            'type': 'fill',
-            'filter': [ 'all', [ '==', 'active', 'false' ],
-              [ '==', '$type', 'Polygon' ],
-              [ '!=', 'mode', 'static' ]
-            ],
-            'paint': {
-              'fill-color': '#3bb2d0',
-              'fill-outline-color': '#3bb2d0',
-              'fill-opacity': 0.1
-            }
-          },
-          {
-            'id': 'gl-draw-polygon-fill-active',
-            'type': 'fill',
-            'filter': [ 'all', [ '==', 'active', 'true' ],
-              [ '==', '$type', 'Polygon' ]
-            ],
-            'paint': {
-              'fill-color': '#fbb03b',
-              'fill-outline-color': '#fbb03b',
-              'fill-opacity': 0.1
-            }
-          },
-          {
-            'id': 'gl-draw-polygon-midpoint',
-            'type': 'circle',
-            'filter': [ 'all', [ '==', '$type', 'Point' ],
-              [ '==', 'meta', 'midpoint' ]
-            ],
-            'paint': {
-              'circle-radius': 3,
-              'circle-color': '#fbb03b'
-            }
-          },
-          {
-            'id': 'gl-draw-polygon-stroke-inactive',
-            'type': 'line',
-            'filter': [ 'all', [ '==', 'active', 'false' ],
-              [ '==', '$type', 'Polygon' ],
-              [ '!=', 'mode', 'static' ]
-            ],
-            'layout': {
-              'line-cap': 'round',
-              'line-join': 'round'
-            },
-            'paint': {
-              'line-color': '#3bb2d0',
-              'line-width': 2
-            }
-          },
-          {
-            'id': 'gl-draw-polygon-stroke-active',
-            'type': 'line',
-            'filter': [ 'all', [ '==', 'active', 'true' ],
-              [ '==', '$type', 'Polygon' ]
-            ],
-            'layout': {
-              'line-cap': 'round',
-              'line-join': 'round'
-            },
-            'paint': {
-              'line-color': '#fbb03b',
-              'line-dasharray': [ 0.2, 2 ],
-              'line-width': 2
-            }
-          },
-          {
-            'id': 'gl-draw-line-inactive',
-            'type': 'line',
-            'filter': [ 'all', [ '==', 'active', 'false' ],
-              [ '==', '$type', 'LineString' ],
-              [ '!=', 'mode', 'static' ]
-            ],
-            'layout': {
-              'line-cap': 'round',
-              'line-join': 'round'
-            },
-            'paint': {
-              'line-color': '#3bb2d0',
-              'line-width': 2
-            }
-          },
-          {
-            'id': 'gl-draw-line-active',
-            'type': 'line',
-            'filter': [ 'all', [ '==', '$type', 'LineString' ],
-              [ '==', 'active', 'true' ]
-            ],
-            'layout': {
-              'line-cap': 'round',
-              'line-join': 'round'
-            },
-            'paint': {
-              'line-color': '#fbb03b',
-              'line-dasharray': [ 0.2, 2 ],
-              'line-width': 2
-            }
-          },
-          {
-            'id': 'gl-draw-polygon-and-line-vertex-stroke-inactive',
-            'type': 'circle',
-            'filter': [ 'all', [ '==', 'meta', 'vertex' ],
-              [ '==', '$type', 'Point' ],
-              [ '!=', 'mode', 'static' ]
-            ],
-            'paint': {
-              'circle-radius': 5,
-              'circle-color': '#fff'
-            }
-          },
-          {
-            'id': 'gl-draw-polygon-and-line-vertex-inactive',
-            'type': 'circle',
-            'filter': [ 'all', [ '==', 'meta', 'vertex' ],
-              [ '==', '$type', 'Point' ],
-              [ '!=', 'mode', 'static' ]
-            ],
-            'paint': {
-              'circle-radius': 3,
-              'circle-color': '#fbb03b'
-            }
-          },
-          {
-            'id': 'gl-draw-point-point-stroke-inactive',
-            'type': 'circle',
-            'filter': [ 'all', [ '==', 'active', 'false' ],
-              [ '==', '$type', 'Point' ],
-              [ '==', 'meta', 'feature' ],
-              [ '!=', 'mode', 'static' ]
-            ],
-            'paint': {
-              'circle-radius': 5,
-              'circle-opacity': 1,
-              'circle-color': '#fff'
-            }
-          },
-          {
-            'id': 'gl-draw-point-inactive',
-            'type': 'circle',
-            'filter': [ 'all', [ '==', 'active', 'false' ],
-              [ '==', '$type', 'Point' ],
-              [ '==', 'meta', 'feature' ],
-              [ '!=', 'mode', 'static' ]
-            ],
-            'paint': {
-              'circle-radius': 3,
-              'circle-color': '#3bb2d0'
-            }
-          },
-          {
-            'id': 'gl-draw-point-stroke-active',
-            'type': 'circle',
-            'filter': [ 'all', [ '==', '$type', 'Point' ],
-              [ '==', 'active', 'true' ],
-              [ '!=', 'meta', 'midpoint' ]
-            ],
-            'paint': {
-              'circle-radius': 7,
-              'circle-color': '#fff'
-            }
-          },
-          {
-            'id': 'gl-draw-point-active',
-            'type': 'circle',
-            'filter': [ 'all', [ '==', '$type', 'Point' ],
-              [ '!=', 'meta', 'midpoint' ],
-              [ '==', 'active', 'true' ]
-            ],
-            'paint': {
-              'circle-radius': 5,
-              'circle-color': '#fbb03b'
-            }
-          },
-          {
-            'id': 'gl-draw-polygon-fill-static',
-            'type': 'fill',
-            'filter': [ 'all', [ '==', 'mode', 'static' ],
-              [ '==', '$type', 'Polygon' ]
-            ],
-            'paint': {
-              'fill-color': '#404040',
-              'fill-outline-color': '#404040',
-              'fill-opacity': 0.1
-            }
-          },
-          {
-            'id': 'gl-draw-polygon-stroke-static',
-            'type': 'line',
-            'filter': [ 'all', [ '==', 'mode', 'static' ],
-              [ '==', '$type', 'Polygon' ]
-            ],
-            'layout': {
-              'line-cap': 'round',
-              'line-join': 'round'
-            },
-            'paint': {
-              'line-color': '#404040',
-              'line-width': 2
-            }
-          },
-          {
-            'id': 'gl-draw-line-static',
-            'type': 'line',
-            'filter': [ 'all', [ '==', 'mode', 'static' ],
-              [ '==', '$type', 'LineString' ]
-            ],
-            'layout': {
-              'line-cap': 'round',
-              'line-join': 'round'
-            },
-            'paint': {
-              'line-color': '#404040',
-              'line-width': 2
-            }
-          },
-          {
-            'id': 'gl-draw-point-static',
-            'type': 'circle',
-            'filter': [ 'all', [ '==', 'mode', 'static' ],
-              [ '==', '$type', 'Point' ]
-            ],
-            'paint': {
-              'circle-radius': 5,
-              'circle-color': '#404040'
-            }
-          },
-
-          // end default themes provided by MB Draw
-          // end default themes provided by MB Draw
-          // end default themes provided by MB Draw
-          // end default themes provided by MB Draw
-
-
-          // new styles for toggling colors
-          // new styles for toggling colors
-          // new styles for toggling colors
-          // new styles for toggling colors
-
-          {
-            'id': 'gl-draw-polygon-color-picker',
-            'type': 'fill',
-            'filter': [ 'all', [ '==', '$type', 'Polygon' ],
-              [ 'has', 'user_portColor' ]
-            ],
-            'paint': {
-              'fill-color': [ 'get', 'user_portColor' ],
-              'fill-outline-color': [ 'get', 'user_portColor' ],
-              'fill-opacity': 0.5
-            }
-          },
-          {
-            'id': 'gl-draw-line-color-picker',
-            'type': 'line',
-            'filter': [ 'all', [ '==', '$type', 'LineString' ],
-              [ 'has', 'user_portColor' ]
-            ],
-            'paint': {
-              'line-color': [ 'get', 'user_portColor' ],
-              'line-width': 2
-            }
-          },
-          {
-            'id': 'gl-draw-point-color-picker',
-            'type': 'circle',
-            'filter': [ 'all', [ '==', '$type', 'Point' ],
-              [ 'has', 'user_portColor' ]
-            ],
-            'paint': {
-              'circle-radius': 3,
-              'circle-color': [ 'get', 'user_portColor' ]
-            }
-          }
-        ]
+        }
       })
 
       map.value?.addControl(mapDrawer.value, 'bottom-right')
     }
-    const configureIsochroneLayer = () => {
+
+    const createIsochroneLayers = (data: IsochroneData) => {
       if (!map.value) {
         return
       }
+      const source: AnySourceImpl = map.value?.getSource('isochrone_layer')
 
-      map.value.addSource('isochrone', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: []
-        }
-      })
+      if (!source) {
+        map.value?.addSource('isochrone_layer', {
+          type: 'geojson',
+          data
+        })
 
-      map.value.addLayer(
-          {
-            id: 'isoLayer',
-            type: 'fill',
-            // Use "iso" as the data source for this layer
-            source: 'isochrone',
-            layout: {},
-            paint: {
-              // The fill color for the layer is set to a light purple
-              'fill-color': '#5a3fc0',
-              'fill-opacity': 0.3
+        map.value?.addLayer(
+            {
+              id: 'isoLayer',
+              type: 'fill',
+              // Use "iso" as the data source for this layer
+              source: 'isochrone_layer',
+              layout: {},
+              paint: {
+                // The fill color for the layer is set to a light purple
+                'fill-color': data.features[0].properties.fillColor,
+                'fill-opacity': data.features[0].properties.fillOpacity
+              }
             }
+        )
+
+        map.value?.on('click', 'isoLayer', (e: any) => {
+          console.log('isoLayer clicked :: ', e)
+
+          // Copy coordinates array.
+          const coordinates = [ marker.value.lng, marker.value.lat ]
+          const description = 'This is an ISO layer'
+
+          // Ensure that if the map is zoomed out such that multiple
+          // copies of the feature are visible, the popup appears
+          // over the copy being pointed to.
+          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : - 360
           }
-      )
+
+          new MapboxGL.Popup()
+              .setLngLat(coordinates)
+              .setHTML(description)
+              .addTo(map.value!)
+
+        })
+      } else {
+        (source as GeoJSONSource).setData(data)
+      }
     }
 
     const initMapListeners = () => {
@@ -454,7 +190,6 @@ export default defineComponent({
 
       configureCurrentPositionMarker()
       configureDrawingPlugin()
-      configureIsochroneLayer()
 
       emit('map:loaded')
     }
