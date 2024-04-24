@@ -454,6 +454,10 @@ export default defineComponent({
     }
 
     const initMapListeners = () => {
+      if (!map.value) {
+        return
+      }
+
       map.value.on('move', updateMapView)
       map.value.on('zoom', updateMapView)
       map.value.on('rotate', updateMapView)
