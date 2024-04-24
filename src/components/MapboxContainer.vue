@@ -1,8 +1,8 @@
 <template>
   <div id="layout">
     <MapboxGL
-        v-model="currentPosition"
-        :markerPosition='marker'
+        v-model='mapViewPosition'
+        :markerPosition='markerPosition'
         :isochroneValues='isochroneData'
         @map:loaded='handleOnMapLoaded' />
     <SidebarsContainer />
@@ -26,11 +26,11 @@ export default defineComponent({
   },
   setup() {
     const mapboxState = useMapboxState()
-    const { marker, mapView: currentPosition } = storeToRefs(mapboxState)
+    const { marker: markerPosition, mapView: mapViewPosition } = storeToRefs(mapboxState)
     const isochroneState = useIsochroneState()
     const { data: isochroneData, settings } = storeToRefs(isochroneState)
 
-    watch([ marker, settings ], async() => {
+    watch([ markerPosition, settings ], async() => {
       await isochroneState.getIsochroneValue()
     }, { deep: true })
 
@@ -39,8 +39,8 @@ export default defineComponent({
     }
 
     return {
-      marker,
-      currentPosition,
+      mapViewPosition,
+      markerPosition,
       isochroneData,
       handleOnMapLoaded
     }

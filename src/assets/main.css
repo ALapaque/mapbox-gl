@@ -2,7 +2,7 @@
 
 #app {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   padding: 0;
   flex: 1;
 }
@@ -28,7 +28,7 @@ a,
 
   #app {
     display: flex;
-    height: 100vh;
+    height: 100dvh;
     padding: 0;
     flex: 1;
   }

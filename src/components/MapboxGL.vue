@@ -36,22 +36,6 @@ export default defineComponent({
     const map = ref<Map | undefined>()
     const mapDrawer = ref<MapboxGLDraw | undefined>()
 
-
-    watch(() => props.modelValue, (next) => {
-      const curr = getMapView()
-      const mapInstance = map.value
-
-      if (!mapInstance || !curr) {
-        return
-      }
-
-      if (curr.lng !== next.lng || curr.lat !== next.lat)
-        mapInstance.setCenter({ lng: next.lng, lat: next.lat })
-      if (curr.pitch !== next.pitch) mapInstance.setPitch(next.pitch)
-      if (curr.bearing !== next.bearing) mapInstance.setBearing(next.bearing)
-      if (curr.zoom !== next.zoom) mapInstance.setZoom(next.zoom)
-    }, { deep: true })
-
     watch(() => props.isochroneValues, (data) => {
       if (!map.value || !props.isochroneValues || !data) {
         return
@@ -74,6 +58,7 @@ export default defineComponent({
       const { lng, lat, zoom, bearing, pitch } = props.modelValue
 
       map.value = new Map({
+        style: 'mapbox://styles/mapbox/outdoors-v12',
         container: mapContainer.value,
         center: [ lng, lat ],
         bearing,
