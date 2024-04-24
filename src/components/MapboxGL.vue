@@ -3,12 +3,13 @@
 </template>
 
 <script lang="ts">
+import type { IsochroneState } from '@/stores/isochrone'
 import useMapboxState from '@/stores/mapbox'
 
 // @ts-ignore
-import mapboxgl, { Map, Marker } from 'mapbox-gl'
+import mapboxgl, { type AnySourceImpl, GeoJSONSource, GeoJSONSourceOptions, Map, Marker } from 'mapbox-gl'
 import { storeToRefs } from 'pinia'
-import { defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import { defineComponent, onMounted, onUnmounted, type PropType, ref, watch } from 'vue'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_PUBLIC_ACCESS_TOKEN
 
@@ -18,7 +19,9 @@ export default defineComponent({
       type: Object,
       required: true
     },
-    isochroneValues: Object
+    isochroneValues: {
+      type: Object as PropType<IsochroneState['data']>
+    }
   },
   emits: [ 'update:modelValue', 'map:loaded' ],
   setup(props, { emit }) {
@@ -43,17 +46,17 @@ export default defineComponent({
     }, { deep: true })
 
     watch(() => props.isochroneValues, (data) => {
-      if (!map.value || !props.isochroneValues) {
+      if (!map.value || !props.isochroneValues || !data) {
         return
       }
 
-      const source = map.value?.getSource('isochrone')
+      const source: AnySourceImpl = map.value?.getSource('isochrone')
 
       if (!source) {
         return
       }
 
-      source.setData(data)
+      (source as GeoJSONSource).setData(data as any)
     }, { deep: true })
 
     onMounted(() => {

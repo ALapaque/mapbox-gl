@@ -2,7 +2,7 @@
   <div id="layout">
     <MapboxGL
         v-model="currentPosition"
-        :isochroneValues='isochroneValues'
+        :isochroneValues='isochroneData'
         @map:loaded='handleOnMapLoaded' />
     <SidebarsContainer />
   </div>
@@ -26,7 +26,7 @@ export default defineComponent({
     const mapboxState = useMapboxState()
     const { current: currentPosition } = storeToRefs(mapboxState)
     const isochroneState = useIsochroneState()
-    const { values: isochroneValues } = storeToRefs(isochroneState)
+    const { data: isochroneData } = storeToRefs(isochroneState)
 
     watch(currentPosition, async() => {
       await isochroneState.getIsochroneValue()
@@ -38,7 +38,7 @@ export default defineComponent({
 
     return {
       currentPosition,
-      isochroneValues,
+      isochroneData,
       handleOnMapLoaded
     }
   }

@@ -1,4 +1,6 @@
 import useMapboxState from '@/stores/mapbox'
+// @ts-ignore
+import { GeoJSONSourceOptions } from 'mapbox-gl'
 import { defineStore } from 'pinia'
 
 export type IsochroneState = {
@@ -7,12 +9,11 @@ export type IsochroneState = {
     mode: 'walking' | 'cycling' | 'driving',
     duration: number
   },
-  values: any,
   api: {
     baseUrl: string,
     accessToken: string
   }
-}
+} & Pick<GeoJSONSourceOptions, 'data'>
 
 const defaultState = (): IsochroneState => ({
   loading: false,
@@ -20,7 +21,7 @@ const defaultState = (): IsochroneState => ({
     mode: 'walking',
     duration: 10
   },
-  values: undefined,
+  data: undefined,
   api: {
     baseUrl: 'https://api.mapbox.com/isochrone/v1/mapbox/',
     accessToken: import.meta.env.VITE_MAPBOX_PUBLIC_ACCESS_TOKEN
@@ -45,12 +46,12 @@ const useIsochroneState = defineStore(id, {
         const data: any = await query.json()
 
         if (!data) {
-          this.values = undefined
+          this.data = undefined
 
           return
         }
 
-        this.values = data
+        this.data = data
         console.log('getIsochroneValue :: ', data)
         return data
       } catch (_) {
