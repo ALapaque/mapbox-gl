@@ -70,12 +70,18 @@
 <script lang='ts'>
 import useIsochroneState from '@/stores/isochrone'
 import { storeToRefs } from 'pinia'
-import { defineComponent } from 'vue'
+import { defineComponent, watch } from 'vue'
 
 export default defineComponent({
   setup() {
     const isochroneState = useIsochroneState()
     const { settings } = storeToRefs(isochroneState)
+
+    watch(settings, async() => {
+      console.log('MapboxIsochroneSidebar > settings changed :: ', settings)
+
+      await isochroneState.getIsochroneValue()
+    }, { deep: true })
 
     return {
       settings
