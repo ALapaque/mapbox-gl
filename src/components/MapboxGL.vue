@@ -8,7 +8,7 @@ import useMapboxState from '@/stores/mapbox'
 // @ts-ignore
 import MapboxGLDraw from '@mapbox/mapbox-gl-draw'
 // @ts-ignore
-import MapboxGL, { type AnySourceImpl, GeoJSONSource, Map, Marker } from 'mapbox-gl'
+import MapboxGL, { type AnySourceImpl, GeoJSONSource, type LngLatLike, Map, Marker } from 'mapbox-gl'
 import { storeToRefs } from 'pinia'
 import { defineComponent, onMounted, onUnmounted, type PropType, ref, watch } from 'vue'
 
@@ -131,7 +131,7 @@ export default defineComponent({
       if (!source) {
         map.value?.addSource('isochrone_layer', {
           type: 'geojson',
-          data
+          data: data as any
         })
 
         map.value?.addLayer(
@@ -153,7 +153,7 @@ export default defineComponent({
           console.log('isoLayer clicked :: ', e)
 
           // Copy coordinates array.
-          const coordinates = [ marker.value.lng, marker.value.lat ]
+          const coordinates: LngLatLike = [ marker.value.lng, marker.value.lat ]
           const description = 'This is an ISO layer'
 
           // Ensure that if the map is zoomed out such that multiple
@@ -170,7 +170,7 @@ export default defineComponent({
 
         })
       } else {
-        (source as GeoJSONSource).setData(data)
+        (source as GeoJSONSource).setData(data as any)
       }
     }
 
