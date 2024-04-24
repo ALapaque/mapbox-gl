@@ -3,6 +3,8 @@
       id="isochrone-sidebar__container"
       class="bg-gray-faint round shadow-darken10">
     <form id="params">
+      <h4 class="txt-m txt-bold mb6 color-gray">Isochrone settings</h4>
+      <br />
       <h4 class="txt-m txt-bold mb6 color-gray">Choose a travel mode:</h4>
       <div class="mb12 mr12 toggle-group align-center">
         <label class="toggle-container">
