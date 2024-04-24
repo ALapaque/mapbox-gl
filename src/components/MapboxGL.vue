@@ -3,10 +3,10 @@
 </template>
 
 <script lang="ts">
-import useIsochroneState from '@/stores/isochrone'
+import useMapboxState from '@/stores/mapbox'
 
 // @ts-ignore
-import mapboxgl from 'mapbox-gl'
+import mapboxgl, { Map, Marker } from 'mapbox-gl'
 import { storeToRefs } from 'pinia'
 import { defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 
@@ -17,14 +17,15 @@ export default defineComponent({
     modelValue: {
       type: Object,
       required: true
-    }
+    },
+    isochroneValues: Object
   },
-  emits: [ 'update:modelValue' ],
+  emits: [ 'update:modelValue', 'map:loaded' ],
   setup(props, { emit }) {
-    const isochroneState = useIsochroneState()
-    const { values: isochroneValues } = storeToRefs(isochroneState)
+    const mapboxState = useMapboxState()
+    const { current } = storeToRefs(mapboxState)
     const mapContainer = ref<HTMLElement | null>(null)
-    const map = ref<mapboxgl.Map | undefined>()
+    const map = ref<Map | undefined>()
 
     watch(() => props.modelValue, (next) => {
       const curr = getLocation()
@@ -41,14 +42,18 @@ export default defineComponent({
       if (curr.zoom !== next.zoom) mapInstance.setZoom(next.zoom)
     }, { deep: true })
 
-    watch(isochroneValues, (data) => {
-      console.log('MapboxGL > isochroneValues changed :: ', isochroneValues)
-
-      if (!map.value) {
+    watch(() => props.isochroneValues, (data) => {
+      if (!map.value || !props.isochroneValues) {
         return
       }
 
-      map.value?.getSource('isochrone').setData(data)
+      const source = map.value?.getSource('isochrone')
+
+      if (!source) {
+        return
+      }
+
+      source.setData(data)
     }, { deep: true })
 
     onMounted(() => {
@@ -58,23 +63,20 @@ export default defineComponent({
 
       const { lng, lat, zoom, bearing, pitch } = props.modelValue
 
-      map.value = new mapboxgl.Map({
+      map.value = new Map({
         container: mapContainer.value,
-        style: 'mapbox://styles/mapbox/streets-v12',
         center: [ lng, lat ],
         bearing,
         pitch,
         zoom
       })
 
-      const updateLocation = () =>
-          emit('update:modelValue', getLocation())
+      map.value.on('load', handleOnLoad)
 
       map.value.on('move', updateLocation)
       map.value.on('zoom', updateLocation)
       map.value.on('rotate', updateLocation)
       map.value.on('pitch', updateLocation)
-      map.value.on('load', handleOnLoad)
     })
 
     onUnmounted(() => {
@@ -97,6 +99,25 @@ export default defineComponent({
         pitch: map.value.getPitch(),
         zoom: map.value.getZoom()
       }
+    }
+
+    const updateLocation = () => {
+      emit('update:modelValue', getLocation())
+    }
+
+    const createCurrentPositionMarker = () => {
+      const marker: Marker = new Marker({
+        color: '#314ccd',
+        draggable: true
+      })
+
+      marker.setLngLat({ lat: current.value.lat, lng: current.value.lng }).addTo(map.value!)
+      marker.on('dragend', () => {
+        const currentMarkerPosition = marker.getLngLat()
+
+        current.value.lat = currentMarkerPosition.lat
+        current.value.lng = currentMarkerPosition.lng
+      })
     }
 
     const createIsochroneView = () => {
@@ -124,17 +145,17 @@ export default defineComponent({
               'fill-color': '#5a3fc0',
               'fill-opacity': 0.3
             }
-          },
-          'poi-label'
+          }
       )
-
-      void isochroneState.getIsochroneValue()
     }
 
     const handleOnLoad = () => {
       console.log('handleOnload', map)
 
+      createCurrentPositionMarker()
       createIsochroneView()
+
+      emit('map:loaded')
     }
 
     return {

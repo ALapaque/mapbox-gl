@@ -1,9 +1,9 @@
 <template>
   <div
       id="isochrone-sidebar__container"
-      class="bg-gray-faint round">
+      class="bg-gray-faint round shadow-darken10">
     <form id="params">
-      <h4 class="txt-m txt-bold mb6">Choose a travel mode:</h4>
+      <h4 class="txt-m txt-bold mb6 color-gray">Choose a travel mode:</h4>
       <div class="mb12 mr12 toggle-group align-center">
         <label class="toggle-container">
           <input
@@ -33,7 +33,7 @@
           <div class="toggle toggle--active-null toggle--null">Driving</div>
         </label>
       </div>
-      <h4 class="txt-m txt-bold mb6">Choose a maximum duration:</h4>
+      <h4 class="txt-m txt-bold mb6 color-gray">Choose a maximum duration:</h4>
       <div class="mb12 mr12 toggle-group align-center">
         <label class="toggle-container">
           <input
@@ -95,6 +95,5 @@ div#isochrone-sidebar__container {
   width: max-content;
   height: max-content;
   padding: 1rem;
-
 }
 </style>

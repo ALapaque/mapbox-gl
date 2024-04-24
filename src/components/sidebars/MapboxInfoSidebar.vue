@@ -1,5 +1,7 @@
 <template>
-  <div id="mapbox-info-sidebar__container">
+  <div
+      id="mapbox-info-sidebar__container"
+      class='bg-gray-faint round color-gray round shadow-darken10'>
     Longitude: {{ current.lng.toFixed(4) }} | Latitude: {{ current.lat.toFixed(4) }} | Zoom: {{ current.zoom.toFixed(2)
     }} |
     <template v-if="current.bearing">
@@ -38,11 +40,8 @@ export default defineComponent({
 
 <style scoped>
 div#mapbox-info-sidebar__container {
-  background-color: rgb(35 55 75 / 90%);
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 4px;
   height: max-content;
   width: max-content;
+  padding: .5rem 1rem;
 }
 </style>

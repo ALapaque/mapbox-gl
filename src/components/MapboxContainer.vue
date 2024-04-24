@@ -1,6 +1,9 @@
 <template>
   <div id="layout">
-    <MapboxGL v-model="current" @update:modelValue='handleOnChange' />
+    <MapboxGL
+        v-model="currentPosition"
+        :isochroneValues='isochroneValues'
+        @map:loaded='handleOnMapLoaded' />
     <SidebarsContainer />
   </div>
 </template>
@@ -8,9 +11,10 @@
 <script lang="ts">
 import MapboxGL from '@/components/MapboxGL.vue'
 import SidebarsContainer from '@/components/sidebars/SidebarsContainer.vue'
+import useIsochroneState from '@/stores/isochrone'
 import useMapboxState from '@/stores/mapbox'
 import { storeToRefs } from 'pinia'
-import { defineComponent } from 'vue'
+import { defineComponent, watch } from 'vue'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 export default defineComponent({
@@ -20,20 +24,22 @@ export default defineComponent({
   },
   setup() {
     const mapboxState = useMapboxState()
-    const { current } = storeToRefs(mapboxState)
+    const { current: currentPosition } = storeToRefs(mapboxState)
+    const isochroneState = useIsochroneState()
+    const { values: isochroneValues } = storeToRefs(isochroneState)
 
-    const resetLocation = () => {
-      mapboxState.$reset()
-    }
+    watch(currentPosition, async() => {
+      await isochroneState.getIsochroneValue()
+    }, { deep: true })
 
-    const handleOnChange = (value: any) => {
-      console.log('handleOnChange :: ', value)
+    const handleOnMapLoaded = async() => {
+      await isochroneState.getIsochroneValue()
     }
 
     return {
-      current,
-      resetLocation,
-      handleOnChange
+      currentPosition,
+      isochroneValues,
+      handleOnMapLoaded
     }
   }
 })

@@ -7,7 +7,7 @@ export type IsochroneState = {
     mode: 'walking' | 'cycling' | 'driving',
     duration: number
   },
-  values: any[],
+  values: any,
   api: {
     baseUrl: string,
     accessToken: string
@@ -17,10 +17,10 @@ export type IsochroneState = {
 const defaultState = (): IsochroneState => ({
   loading: false,
   settings: {
-    mode: 'driving',
+    mode: 'walking',
     duration: 10
   },
-  values: [],
+  values: undefined,
   api: {
     baseUrl: 'https://api.mapbox.com/isochrone/v1/mapbox/',
     accessToken: import.meta.env.VITE_MAPBOX_PUBLIC_ACCESS_TOKEN
@@ -32,7 +32,7 @@ const id: string = 'isochrone-state'
 const useIsochroneState = defineStore(id, {
   state: defaultState,
   actions: {
-    async getIsochroneValue(): Promise<any[] | undefined> {
+    async getIsochroneValue(): Promise<any> {
       const mapboxState = useMapboxState()
 
       this.loading = true
@@ -42,16 +42,16 @@ const useIsochroneState = defineStore(id, {
           `${this.api.baseUrl}${this.settings.mode}/${mapboxState.current.lng},${mapboxState.current.lat}?contours_minutes=${this.settings.duration}&polygons=true&access_token=${this.api.accessToken}`,
           { method: 'GET' }
         )
-        const data = await query.json()
+        const data: any = await query.json()
 
         if (!data) {
-          this.values = []
+          this.values = undefined
 
-          return []
+          return
         }
 
         this.values = data
-
+        console.log('getIsochroneValue :: ', data)
         return data
       } catch (_) {
 
