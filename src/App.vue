@@ -1,7 +1,5 @@
 <template>
-  <div id="layout">
-    <MapboxContainer />
-  </div>
+  <MapboxContainer />
 </template>
 
 <script>

@@ -1,50 +1,29 @@
 <template>
   <div id="layout">
-    <div id="sidebar">
-      Longitude: {{ location.lng.toFixed(4) }} | Latitude: {{ location.lat.toFixed(4) }} | Zoom: {{ location.zoom.toFixed(2) }} |
-      <template v-if="location.bearing">
-        Bearing: {{ location.bearing.toFixed(2) }} |
-      </template>
-      <template v-if="location.pitch">
-        Pitch: {{ location.pitch.toFixed(2) }} |
-      </template>
-      <button @click="resetLocation">
-        Reset
-      </button>
-    </div>
-    <MapboxGL v-model="location" @update:modelValue='handleOnChange'/>
+    <MapboxGL v-model="current" @update:modelValue='handleOnChange' />
+    <SidebarsContainer />
   </div>
 </template>
 
 <script lang="ts">
 import MapboxGL from '@/components/MapboxGL.vue'
-import { defineComponent, ref } from 'vue';
-import 'mapbox-gl/dist/mapbox-gl.css';
-
-export type Position = {
-  lng: number,
-  lat: number,
-  bearing: number,
-  pitch: number,
-  zoom: number
-}
+import SidebarsContainer from '@/components/sidebars/SidebarsContainer.vue'
+import useMapboxState from '@/stores/mapbox'
+import { storeToRefs } from 'pinia'
+import { defineComponent } from 'vue'
+import 'mapbox-gl/dist/mapbox-gl.css'
 
 export default defineComponent({
   components: {
-    MapboxGL,
+    SidebarsContainer,
+    MapboxGL
   },
   setup() {
-    const basePosition: Position = {
-      lng: 4.586389684507004,
-      lat: 50.730783284021605,
-      bearing: 0,
-      pitch: 0,
-      zoom: 15
-    }
-    const location = ref<Position>(basePosition)
+    const mapboxState = useMapboxState()
+    const { current } = storeToRefs(mapboxState)
 
     const resetLocation = () => {
-      location.value = basePosition
+      mapboxState.$reset()
     }
 
     const handleOnChange = (value: any) => {
@@ -52,12 +31,12 @@ export default defineComponent({
     }
 
     return {
-      location,
+      current,
       resetLocation,
       handleOnChange
     }
   }
-});
+})
 </script>
 
 <style>
