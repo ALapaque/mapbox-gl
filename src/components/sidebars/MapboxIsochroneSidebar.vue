@@ -92,10 +92,14 @@ export default defineComponent({
 })
 </script>
 
-<style>
+<style scoped>
 div#isochrone-sidebar__container {
-  width: max-content;
-  height: max-content;
+  width: 100%;
   padding: 1rem;
+}
+
+div.toggle-group {
+  display: flex;
+  flex-wrap: wrap;
 }
 </style>

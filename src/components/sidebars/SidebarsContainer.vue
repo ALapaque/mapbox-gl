@@ -28,4 +28,13 @@ div#sidebars__container {
   gap: 1rem;
   padding: 1rem;
 }
+
+@media screen and (max-width: 820px) {
+  div#sidebars__container {
+    max-width: 100vw;
+    width: 100vw;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
 </style>

@@ -3,7 +3,7 @@
       id="mapbox-info-sidebar__container"
       class='bg-gray-faint round color-gray round shadow-darken10'>
     <div class='current-position__container'>
-      <h4>MapView position:</h4>
+      <h4 class="txt-m txt-bold mb6 color-gray">MapView position:</h4>
       <span>
         Longitude: {{ mapView.lng.toFixed(4) }} |
         Latitude: {{ mapView.lat.toFixed(4) }} |
@@ -20,10 +20,10 @@
       </button>
     </div>
     <div class='marker-position__container'>
-      <h4>Marker position:</h4>
+      <h4 class="txt-m txt-bold mb6 color-gray">Marker position:</h4>
       <span>
         Longitude: {{ marker.lng.toFixed(4) }} |
-        Latitude: {{ marker.lat.toFixed(4) }} |
+        Latitude: {{ marker.lat.toFixed(4) }}
       </span>
     </div>
   </div>
@@ -54,8 +54,7 @@ export default defineComponent({
 
 <style scoped>
 div#mapbox-info-sidebar__container {
-  height: max-content;
-  width: max-content;
+  width: 100%;
   padding: .5rem 1rem;
 }
 </style>
