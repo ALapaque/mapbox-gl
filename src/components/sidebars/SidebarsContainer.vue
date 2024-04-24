@@ -32,6 +32,7 @@ div#sidebars__container {
 @media screen and (max-width: 820px) {
   div#sidebars__container {
     max-width: 100vw;
+    max-height: 25vh;
     width: 100vw;
     flex-direction: row;
     flex-wrap: wrap;
