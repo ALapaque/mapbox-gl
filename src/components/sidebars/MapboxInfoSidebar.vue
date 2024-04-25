@@ -7,12 +7,14 @@
       <span>
         Longitude: {{ mapView.lng.toFixed(4) }} |
         Latitude: {{ mapView.lat.toFixed(4) }} |
-        Zoom: {{ mapView.zoom.toFixed(2) }} |
-        <template v-if="mapView.bearing">
-          Bearing: {{ mapView.bearing.toFixed(2) }} |
+        <template v-if='mapView?.zoom'>
+          Zoom: {{ mapView?.zoom?.toFixed(2) }} |
         </template>
-        <template v-if="mapView.pitch">
-          Pitch: {{ mapView.pitch.toFixed(2) }} |
+        <template v-if="mapView?.bearing">
+          Bearing: {{ mapView?.bearing?.toFixed(2) }} |
+        </template>
+        <template v-if="mapView?.pitch">
+          Pitch: {{ mapView?.pitch?.toFixed(2) }} |
         </template>
       </span>
       <button @click="handleOnReset">

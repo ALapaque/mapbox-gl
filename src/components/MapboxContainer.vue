@@ -9,7 +9,9 @@
         :isochronePlugin='plugins.isochrone'
         @map:loaded='handleOnMapLoaded' />
     <div v-else class='access-position__container'>
-      <h1>Please answer the popup about accessing your positions</h1>
+      <h1 class='txt-bold mb6 color-gray'>Please answer the popup about accessing your positions</h1>
+      <p class='mb6 color-gray'>Fallback to a default position in </p>
+      <span class='color-red'>{{ countdown }}</span>
     </div>
     <SidebarsContainer v-if='isPositionInitialized' />
   </div>
@@ -21,7 +23,7 @@ import SidebarsContainer from '@/components/sidebars/SidebarsContainer.vue'
 import useIsochroneState from '@/stores/isochrone'
 import useMapboxState from '@/stores/mapbox'
 import { storeToRefs } from 'pinia'
-import { defineComponent, onMounted, watch } from 'vue'
+import { defineComponent, onMounted, ref, watch } from 'vue'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 
@@ -41,6 +43,7 @@ export default defineComponent({
     } = storeToRefs(mapboxState)
     const isochroneState = useIsochroneState()
     const { data: isochroneData, settings } = storeToRefs(isochroneState)
+    const countdown = ref<number>(10)
 
     const fetchIsochroneValues = async() => {
       if (!plugins.value.isochrone) {
@@ -77,7 +80,15 @@ export default defineComponent({
         initialized.value = true
       }
 
-      navigator.geolocation.getCurrentPosition(handleOnSuccess, handleOnRejected, { timeout: 5000 })
+      navigator.geolocation.getCurrentPosition(handleOnSuccess, handleOnRejected, { timeout: 10000 })
+      const countdownInterval = setInterval(() => {
+        countdown.value --
+
+        // if countdown reaches 0 or geolocation is initialized, clear the interval
+        if (countdown.value <= 0 || initialized.value) {
+          clearInterval(countdownInterval)
+        }
+      }, 1000)
     })
 
     return {
@@ -85,6 +96,7 @@ export default defineComponent({
       markerPosition,
       plugins,
       isochroneData,
+      countdown,
       isPositionInitialized: initialized,
       handleOnMapLoaded
     }
@@ -99,14 +111,27 @@ export default defineComponent({
 }
 
 div.access-position__container {
+  padding: 1rem;
   width: 100vw;
   height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
 div.access-position__container > h1 {
   text-align: center;
+  font-size: 2rem;
+}
+
+div.access-position__container > p {
+  text-align: center;
+  font-size: 1rem;
+}
+
+div.access-position__container > span {
+  text-align: center;
+  font-size: 4rem;
 }
 </style>
