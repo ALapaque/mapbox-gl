@@ -219,10 +219,6 @@ export default defineComponent({
           coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : - 360
         }
 
-
-        const h1 = document.createElement('h1')
-        h1.innerHTML = 'Hey there'
-
         new MapboxGL.Popup()
             .setLngLat(coordinates)
             .setDOMContent(layerSettingsEditionPopupRef.value!)
