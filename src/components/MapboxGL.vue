@@ -8,7 +8,15 @@ import useMapboxState, { type MapboxPosition } from '@/stores/mapbox'
 // @ts-ignore
 import MapboxGLDraw from '@mapbox/mapbox-gl-draw'
 // @ts-ignore
-import MapboxGL, { type AnySourceImpl, GeoJSONSource, type LngLatLike, Map, Marker } from 'mapbox-gl'
+import MapboxGL, {
+  type AnyLayer,
+  type AnySourceImpl,
+  type FillLayer,
+  GeoJSONSource,
+  type LngLatLike,
+  Map,
+  Marker
+} from 'mapbox-gl'
 import { storeToRefs } from 'pinia'
 import { defineComponent, onMounted, onUnmounted, type PropType, ref, watch } from 'vue'
 
@@ -214,11 +222,9 @@ export default defineComponent({
           {
             id: isochroneLayerName,
             type: 'fill',
-            // Use "iso" as the data source for this layer
             source: sourceName,
             layout: {},
             paint: {
-              // The fill color for the layer is set to a light purple
               'fill-color': data.features[0].properties.fillColor,
               'fill-opacity': data.features[0].properties.fillOpacity
             }
@@ -227,21 +233,22 @@ export default defineComponent({
       map.value?.on('click', isochroneLayerName, (e: any) => {
         console.log('isoLayer clicked :: ', e)
 
-        // Copy coordinates array.
         const coordinates: LngLatLike = [ marker.value.lng, marker.value.lat ]
         const description = 'This is an ISO layer'
 
-        // Ensure that if the map is zoomed out such that multiple
-        // copies of the feature are visible, the popup appears
-        // over the copy being pointed to.
         while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
           coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : - 360
         }
+
+        map.value?.setPaintProperty(isochroneLayerName, 'fill-color', '#193c63')
 
         new MapboxGL.Popup()
             .setLngLat(coordinates)
             .setHTML(description)
             .addTo(map.value!)
+            .on('close', () => {
+              map.value?.setPaintProperty(isochroneLayerName, 'fill-color', data.features[0].properties.fillColor)
+            })
 
       });
 
