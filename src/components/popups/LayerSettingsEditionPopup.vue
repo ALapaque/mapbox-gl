@@ -16,7 +16,9 @@
 </template>
 
 <script lang='ts'>
+import useIsochroneState from '@/stores/isochrone'
 import { Map } from 'mapbox-gl'
+import { storeToRefs } from 'pinia'
 import { defineComponent, type PropType, ref } from 'vue'
 
 export default defineComponent({
@@ -31,18 +33,22 @@ export default defineComponent({
     }
   },
   setup(props) {
+    const isochroneState = useIsochroneState()
+    const { settings } = storeToRefs(isochroneState)
     const mapboxInstance = ref<Map>(props.mapInstance)
-    const backgroundColor = ref<string>(mapboxInstance.value.getPaintProperty(props.layerName, 'fill-color') ?? '')
-    const opacity = ref<number>((mapboxInstance.value.getPaintProperty(props.layerName, 'fill-opacity') ?? 0) * 100)
+    const backgroundColor = ref<string>(`#${settings.value.color}`)
+    const opacity = ref<number>(settings.value.opacity)
 
     const handleOnBackgroundColorChange = ($event: Event) => {
       console.log('event :: ', $event)
       mapboxInstance.value.setPaintProperty(props.layerName, 'fill-color', ($event.target as any).value)
+      isochroneState.settings.color = ($event.target as any).value.split('#')[1]
     }
 
     const handleOnOpacityChange = ($event: Event) => {
       console.log('event', ($event.target as any).valueAsNumber)
       mapboxInstance.value.setPaintProperty(props.layerName, 'fill-opacity', ($event.target as any).valueAsNumber / 100)
+      isochroneState.settings.opacity = ($event.target as any).valueAsNumber
     }
 
     return {

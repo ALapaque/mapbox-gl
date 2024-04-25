@@ -12,6 +12,7 @@
 <script lang="ts">
 import LayerSettingsEditionPopup from '@/components/popups/LayerSettingsEditionPopup.vue'
 import type { IsochroneData } from '@/models/isochrone/IsochroneData'
+import useIsochroneState from '@/stores/isochrone'
 import useMapboxState, { type MapboxPosition } from '@/stores/mapbox'
 // @ts-ignore
 import MapboxGLDraw from '@mapbox/mapbox-gl-draw'
@@ -57,6 +58,8 @@ export default defineComponent({
     const isochroneLayerName: string = 'isochrone_layer'
     const mapboxState = useMapboxState()
     const { marker } = storeToRefs(mapboxState)
+    const isochroneState = useIsochroneState()
+    const { settings } = storeToRefs(isochroneState)
     const mapContainerRef = ref<HTMLElement | null>()
     const map = ref<Map | undefined>()
     const mapDrawer = ref<MapboxGLDraw | undefined>(new MapboxGLDraw({
@@ -199,8 +202,8 @@ export default defineComponent({
         source: sourceName,
         layout: {},
         paint: {
-          'fill-color': data.features[0].properties.fillColor,
-          'fill-opacity': data.features[0].properties.fillOpacity
+          'fill-color': `#${settings.value.color}`,
+          'fill-opacity': settings.value.opacity / 100
         }
       }
 
