@@ -17,9 +17,6 @@
           Pitch: {{ mapView?.pitch?.toFixed(2) }} |
         </template>
       </span>
-      <button @click="handleOnReset">
-        Reset
-      </button>
     </div>
     <div class='marker-position__container'>
       <h4 class="txt-m txt-bold mb6 color-gray">Marker position:</h4>
@@ -41,14 +38,9 @@ export default defineComponent({
     const mapboxState = useMapboxState()
     const { mapView, marker } = storeToRefs(mapboxState)
 
-    const handleOnReset = () => {
-      mapboxState.$reset()
-    }
-
     return {
       mapView,
-      marker,
-      handleOnReset
+      marker
     }
   }
 })
