@@ -33,7 +33,7 @@ export default defineComponent({
   setup(props) {
     const mapboxInstance = ref<Map>(props.mapInstance)
     const backgroundColor = ref<string>(mapboxInstance.value.getPaintProperty(props.layerName, 'fill-color') ?? '')
-    const opacity = ref<number>(mapboxInstance.value.getPaintProperty(props.layerName, 'fill-opacity') * 100 ?? 0)
+    const opacity = ref<number>((mapboxInstance.value.getPaintProperty(props.layerName, 'fill-opacity') ?? 0) * 100)
 
     const handleOnBackgroundColorChange = ($event: Event) => {
       console.log('event :: ', $event)
