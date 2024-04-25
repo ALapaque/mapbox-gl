@@ -3,10 +3,9 @@
     <MapboxGL
         v-if='isPositionInitialized'
         v-model='mapViewPosition'
+        ref='mapboxGLRef'
         :markerPosition='markerPosition'
         :isochroneValues='isochroneData'
-        :drawing-plugin='plugins.drawShapes'
-        :isochronePlugin='plugins.isochrone'
         @map:loaded='handleOnMapLoaded' />
     <div v-else class='access-position__container'>
       <h1 class='txt-bold mb6 color-gray'>Please answer the popup about accessing your positions</h1>
@@ -18,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import MapboxGL from '@/components/MapboxGL.vue'
+import MapboxGL, { type MapboxGLType } from '@/components/MapboxGL.vue'
 import SidebarsContainer from '@/components/sidebars/SidebarsContainer.vue'
 import useIsochroneState from '@/stores/isochrone'
 import useMapboxState from '@/stores/mapbox'
@@ -33,17 +32,44 @@ export default defineComponent({
     MapboxGL
   },
   setup() {
+    const mapboxGLRef = ref<MapboxGLType>()
     const mapboxState = useMapboxState()
     const {
       marker: markerPosition,
       mapView: mapViewPosition,
       base: basePosition,
       plugins,
-      initialized
+      initialized,
+      isIsochronePluginActivated,
+      isDrawingPluginActivated
     } = storeToRefs(mapboxState)
     const isochroneState = useIsochroneState()
     const { data: isochroneData, settings } = storeToRefs(isochroneState)
     const countdown = ref<number>(10)
+
+    watch(isIsochronePluginActivated, (isActive: boolean) => {
+      if (!mapboxGLRef.value) {
+        return
+      }
+
+      if (isActive) {
+        mapboxGLRef.value?.plugins.isochrone.enable()
+      } else {
+        mapboxGLRef.value?.plugins.isochrone.disable()
+      }
+    })
+
+    watch(isDrawingPluginActivated, (isActive: boolean) => {
+      if (!mapboxGLRef.value) {
+        return
+      }
+
+      if (isActive) {
+        mapboxGLRef.value?.plugins.drawing.enable()
+      } else {
+        mapboxGLRef.value?.plugins.drawing.disable()
+      }
+    })
 
     const fetchIsochroneValues = async() => {
       if (!plugins.value.isochrone) {
@@ -92,6 +118,7 @@ export default defineComponent({
     })
 
     return {
+      mapboxGLRef,
       mapViewPosition,
       markerPosition,
       plugins,

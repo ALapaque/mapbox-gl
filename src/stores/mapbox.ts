@@ -9,7 +9,7 @@ export type MapboxPosition = {
 }
 
 export type MapboxGLPlugins = {
-  drawShapes: boolean
+  drawing: boolean
   isochrone: boolean
 }
 
@@ -45,7 +45,7 @@ const defaultState = (): MapboxState => {
       zoom: 15
     },
     plugins: {
-      drawShapes: false,
+      drawing: false,
       isochrone: false
     }
   }
@@ -54,7 +54,15 @@ const defaultState = (): MapboxState => {
 const id: string = 'mapbox-state'
 
 const useMapboxState = defineStore(id, {
-  state: defaultState
+  state: defaultState,
+  getters: {
+    isIsochronePluginActivated(state: MapboxState): boolean {
+      return state.plugins.isochrone
+    },
+    isDrawingPluginActivated(state: MapboxState): boolean {
+      return state.plugins.drawing
+    }
+  }
 })
 
 export default useMapboxState

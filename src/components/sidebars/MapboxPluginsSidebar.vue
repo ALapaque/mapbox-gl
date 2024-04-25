@@ -1,48 +1,48 @@
 <template>
   <div
-      id="isochrone-sidebar__container"
-      class="bg-gray-faint round shadow-darken10">
-    <form id="params">
-      <h4 class="txt-m txt-bold mb6 color-gray">Isochrone Plugin</h4>
-      <div class="mb12 mr12 toggle-group align-center">
-        <label class="toggle-container">
+      id='isochrone-sidebar__container'
+      class='bg-gray-faint round shadow-darken10'>
+    <form id='params'>
+      <h4 class='txt-m txt-bold mb6 color-gray'>Isochrone Plugin</h4>
+      <div class='mb12 mr12 toggle-group align-center'>
+        <label class='toggle-container'>
           <input
               v-model='plugins.isochrone'
-              :checked="plugins.isochrone"
+              :checked='plugins.isochrone'
               :value='true'
-              name="profile"
-              type="radio" />
-          <div class="toggle toggle--active-null toggle--null">Active</div>
+              name='profile'
+              type='radio' />
+          <div class='toggle toggle--active-null toggle--null'>Active</div>
         </label>
-        <label class="toggle-container">
+        <label class='toggle-container'>
           <input
               v-model='plugins.isochrone'
-              :checked="!plugins.isochrone"
+              :checked='!plugins.isochrone'
               :value='false'
-              name="profile"
-              type="radio" />
-          <div class="toggle toggle--active-null toggle--null">Inactive</div>
+              name='profile'
+              type='radio' />
+          <div class='toggle toggle--active-null toggle--null'>Inactive</div>
         </label>
       </div>
-      <h4 class="txt-m txt-bold mb6 color-gray">Drawing plugin:</h4>
-      <div class="mb12 mr12 toggle-group align-center">
-        <label class="toggle-container">
+      <h4 class='txt-m txt-bold mb6 color-gray'>Drawing plugin:</h4>
+      <div class='mb12 mr12 toggle-group align-center'>
+        <label class='toggle-container'>
           <input
-              v-model='plugins.drawShapes'
-              :checked="plugins.drawShapes"
+              v-model='plugins.drawing'
+              :checked='plugins.drawing'
               :value='true'
-              name="duration"
-              type="radio" />
-          <div class="toggle toggle--active-null toggle--null">Active</div>
+              name='duration'
+              type='radio' />
+          <div class='toggle toggle--active-null toggle--null'>Active</div>
         </label>
-        <label class="toggle-container">
+        <label class='toggle-container'>
           <input
-              v-model='plugins.drawShapes'
-              :checked="!plugins.drawShapes"
+              v-model='plugins.drawing'
+              :checked='!plugins.drawing'
               :value='false'
-              name="duration"
-              type="radio" />
-          <div class="toggle toggle--active-null toggle--null">Inactive</div>
+              name='duration'
+              type='radio' />
+          <div class='toggle toggle--active-null toggle--null'>Inactive</div>
         </label>
       </div>
     </form>

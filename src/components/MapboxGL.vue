@@ -8,19 +8,24 @@ import useMapboxState, { type MapboxPosition } from '@/stores/mapbox'
 // @ts-ignore
 import MapboxGLDraw from '@mapbox/mapbox-gl-draw'
 // @ts-ignore
-import MapboxGL, {
-  type AnyLayer,
-  type AnySourceImpl,
-  type FillLayer,
-  GeoJSONSource,
-  type LngLatLike,
-  Map,
-  Marker
-} from 'mapbox-gl'
+import MapboxGL, { type AnySourceImpl, GeoJSONSource, type LngLatLike, Map, Marker } from 'mapbox-gl'
 import { storeToRefs } from 'pinia'
 import { defineComponent, onMounted, onUnmounted, type PropType, ref, watch } from 'vue'
 
 MapboxGL.accessToken = import.meta.env.VITE_MAPBOX_PUBLIC_ACCESS_TOKEN
+
+export type MapboxGLType = {
+  plugins: {
+    isochrone: {
+      enable(): void,
+      disable(): void,
+    },
+    drawing: {
+      enable(): void,
+      disable(): void
+    }
+  }
+}
 
 export default defineComponent({
   props: {
@@ -32,14 +37,13 @@ export default defineComponent({
       type: Object as PropType<MapboxPosition>,
       required: true
     },
-    drawingPlugin: Boolean,
-    isochronePlugin: Boolean,
     isochroneValues: {
       type: Object as PropType<IsochroneData>
     }
   },
+  expose: [ 'enableIsochronePlugin', 'disableIsochronePlugin', 'enableDrawingPlugin', 'disableDrawingPlugin' ],
   emits: [ 'update:modelValue', 'map:loaded' ],
-  setup(props, { emit }) {
+  setup(props, { emit, expose }) {
     const isochroneSourceName: string = 'isochrone_source'
     const isochroneLayerName: string = 'isochrone_layer'
     const mapboxState = useMapboxState()
@@ -51,32 +55,6 @@ export default defineComponent({
       // it appends the word "user_" to the property
       userProperties: true
     }))
-
-    watch(() => props.isochronePlugin, (isActive: boolean) => {
-      console.log('MapboxGL > watcher > () => props.isochronePlugin ')
-      if (!map.value) {
-        return
-      }
-
-      if (isActive) {
-        enableIsochronePlugin()
-      } else {
-        disableIsochronePlugin()
-      }
-    })
-
-    watch(() => props.drawingPlugin, (isActive: boolean) => {
-      console.log('MapboxGL > watcher > () => props.drawingPlugin ')
-      if (!map.value) {
-        return
-      }
-
-      if (isActive) {
-        enableDrawingPlugin()
-      } else {
-        disableDrawingPlugin()
-      }
-    })
 
     watch(() => props.isochroneValues, (data) => {
       console.log('MapboxGL > watcher > () => props.isochroneValues ')
@@ -113,20 +91,6 @@ export default defineComponent({
       map.value.remove()
       map.value = undefined
     })
-
-    const configurePlugins = () => {
-      if (props.drawingPlugin) {
-        enableDrawingPlugin()
-      } else {
-        disableDrawingPlugin()
-      }
-
-      if (props.isochronePlugin) {
-        enableIsochronePlugin()
-      } else {
-        disableIsochronePlugin()
-      }
-    }
 
     const getMapView = () => {
       if (!map.value) {
@@ -249,7 +213,6 @@ export default defineComponent({
             .on('close', () => {
               map.value?.setPaintProperty(isochroneLayerName, 'fill-color', data.features[0].properties.fillColor)
             })
-
       });
 
       (source as GeoJSONSource).setData(data as any)
@@ -270,10 +233,22 @@ export default defineComponent({
       initMapListeners()
 
       configureCurrentPositionMarker()
-      configurePlugins()
 
       emit('map:loaded')
     }
+
+    expose({
+      plugins: {
+        isochrone: {
+          enable: enableIsochronePlugin,
+          disable: disableIsochronePlugin
+        },
+        drawing: {
+          enable: enableDrawingPlugin,
+          disable: disableDrawingPlugin
+        }
+      }
+    })
 
     return {
       mapContainerRef,
