@@ -1,14 +1,22 @@
 <template>
-  <div ref="mapContainerRef" class="map-container" />
+  <div ref="mapContainerRef" class="map-container">
+    <div id="popup" ref="layerSettingsEditionPopupRef">
+      <LayerSettingsEditionPopup
+          v-if='layerSelected && map'
+          :layerName='layerSelected.id'
+          :mapInstance='map' />
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
+import LayerSettingsEditionPopup from '@/components/popups/LayerSettingsEditionPopup.vue'
 import type { IsochroneData } from '@/models/isochrone/IsochroneData'
 import useMapboxState, { type MapboxPosition } from '@/stores/mapbox'
 // @ts-ignore
 import MapboxGLDraw from '@mapbox/mapbox-gl-draw'
 // @ts-ignore
-import MapboxGL, { type AnySourceImpl, GeoJSONSource, type LngLatLike, Map, Marker } from 'mapbox-gl'
+import MapboxGL, { type AnySourceImpl, type FillLayer, GeoJSONSource, type LngLatLike, Map, Marker } from 'mapbox-gl'
 import { storeToRefs } from 'pinia'
 import { defineComponent, onMounted, onUnmounted, type PropType, ref, watch } from 'vue'
 
@@ -28,6 +36,7 @@ export type MapboxGLType = {
 }
 
 export default defineComponent({
+  components: { LayerSettingsEditionPopup },
   props: {
     modelValue: {
       type: Object as PropType<MapboxPosition>,
@@ -48,13 +57,15 @@ export default defineComponent({
     const isochroneLayerName: string = 'isochrone_layer'
     const mapboxState = useMapboxState()
     const { marker } = storeToRefs(mapboxState)
-    const mapContainerRef = ref<HTMLElement | null>(null)
+    const mapContainerRef = ref<HTMLElement | null>()
     const map = ref<Map | undefined>()
     const mapDrawer = ref<MapboxGLDraw | undefined>(new MapboxGLDraw({
       // this is used to allow for custom properties for styling
       // it appends the word "user_" to the property
       userProperties: true
     }))
+    const layerSelected = ref<FillLayer | undefined>()
+    const layerSettingsEditionPopupRef = ref<HTMLDivElement | null>()
 
     watch(() => props.isochroneValues, (data) => {
       console.log('MapboxGL > watcher > () => props.isochroneValues ')
@@ -182,36 +193,39 @@ export default defineComponent({
         map.value?.removeLayer(isochroneLayerName)
       }
 
-      map.value?.addLayer(
-          {
-            id: isochroneLayerName,
-            type: 'fill',
-            source: sourceName,
-            layout: {},
-            paint: {
-              'fill-color': data.features[0].properties.fillColor,
-              'fill-opacity': data.features[0].properties.fillOpacity
-            }
-          }
-      )
+      const layer: FillLayer = {
+        id: isochroneLayerName,
+        type: 'fill',
+        source: sourceName,
+        layout: {},
+        paint: {
+          'fill-color': data.features[0].properties.fillColor,
+          'fill-opacity': data.features[0].properties.fillOpacity
+        }
+      }
+
+      map.value?.addLayer(layer)
+
       map.value?.on('click', isochroneLayerName, (e: any) => {
         console.log('isoLayer clicked :: ', e)
+        layerSelected.value = map.value?.getLayer(isochroneLayerName) as FillLayer
 
         const coordinates: LngLatLike = [ marker.value.lng, marker.value.lat ]
-        const description = 'This is an ISO layer'
 
         while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
           coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : - 360
         }
 
-        map.value?.setPaintProperty(isochroneLayerName, 'fill-color', '#193c63')
+
+        const h1 = document.createElement('h1')
+        h1.innerHTML = 'Hey there'
 
         new MapboxGL.Popup()
             .setLngLat(coordinates)
-            .setHTML(description)
+            .setDOMContent(layerSettingsEditionPopupRef.value!)
             .addTo(map.value!)
             .on('close', () => {
-              map.value?.setPaintProperty(isochroneLayerName, 'fill-color', data.features[0].properties.fillColor)
+              layerSelected.value = undefined
             })
       });
 
@@ -223,10 +237,10 @@ export default defineComponent({
         return
       }
 
-      map.value.on('move', updateMapView)
-      map.value.on('zoom', updateMapView)
-      map.value.on('rotate', updateMapView)
-      map.value.on('pitch', updateMapView)
+      map.value?.on('move', updateMapView)
+      map.value?.on('zoom', updateMapView)
+      map.value?.on('rotate', updateMapView)
+      map.value?.on('pitch', updateMapView)
     }
 
     const handleOnLoad = () => {
@@ -235,6 +249,10 @@ export default defineComponent({
       configureCurrentPositionMarker()
 
       emit('map:loaded')
+    }
+
+    const popupClicked = () => {
+      console.log('popup clicked')
     }
 
     expose({
@@ -251,7 +269,10 @@ export default defineComponent({
     })
 
     return {
+      layerSettingsEditionPopupRef,
       mapContainerRef,
+      popupClicked,
+      layerSelected,
       map
     }
   }
