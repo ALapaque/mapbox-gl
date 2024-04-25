@@ -8,10 +8,16 @@ export type MapboxPosition = {
   zoom: number
 }
 
+export type MapboxGLPlugins = {
+  drawShapes: boolean
+  isochrone: boolean
+}
+
 export type MapboxState = {
   base: MapboxPosition,
   marker: MapboxPosition,
   mapView: MapboxPosition,
+  plugins: MapboxGLPlugins
 }
 
 const defaultPosition: MapboxPosition = {
@@ -25,7 +31,11 @@ const defaultPosition: MapboxPosition = {
 const defaultState = (): MapboxState => ({
   base: defaultPosition,
   marker: defaultPosition,
-  mapView: defaultPosition
+  mapView: defaultPosition,
+  plugins: {
+    drawShapes: true,
+    isochrone: true
+  }
 })
 
 const id: string = 'mapbox-state'

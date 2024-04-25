@@ -4,6 +4,8 @@
         v-model='mapViewPosition'
         :markerPosition='markerPosition'
         :isochroneValues='isochroneData'
+        :drawing-plugin='plugins.drawShapes'
+        :isochronePlugin='plugins.isochrone'
         @map:loaded='handleOnMapLoaded' />
     <SidebarsContainer />
   </div>
@@ -26,21 +28,30 @@ export default defineComponent({
   },
   setup() {
     const mapboxState = useMapboxState()
-    const { marker: markerPosition, mapView: mapViewPosition } = storeToRefs(mapboxState)
+    const { marker: markerPosition, mapView: mapViewPosition, plugins } = storeToRefs(mapboxState)
     const isochroneState = useIsochroneState()
     const { data: isochroneData, settings } = storeToRefs(isochroneState)
 
-    watch([ markerPosition, settings ], async() => {
+    watch([ markerPosition, settings, plugins ], async() => {
+      if (!plugins.value.isochrone) {
+        return
+      }
+
       await isochroneState.getIsochroneValue()
     }, { deep: true })
 
     const handleOnMapLoaded = async() => {
+      if (!plugins.value.isochrone) {
+        return
+      }
+
       await isochroneState.getIsochroneValue()
     }
 
     return {
       mapViewPosition,
       markerPosition,
+      plugins,
       isochroneData,
       handleOnMapLoaded
     }
@@ -52,18 +63,5 @@ export default defineComponent({
 #layout {
   flex: 1;
   display: flex;
-}
-
-#sidebar {
-  background-color: rgb(35 55 75 / 90%);
-  color: #fff;
-  padding: 6px 12px;
-  font-family: monospace;
-  z-index: 1;
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin: 12px;
-  border-radius: 4px;
 }
 </style>

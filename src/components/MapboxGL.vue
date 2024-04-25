@@ -1,10 +1,10 @@
 <template>
-  <div ref="mapContainer" class="map-container" />
+  <div ref="mapContainerRef" class="map-container" />
 </template>
 
 <script lang="ts">
 import type { IsochroneData } from '@/models/isochrone/IsochroneData'
-import useMapboxState from '@/stores/mapbox'
+import useMapboxState, { type MapboxPosition } from '@/stores/mapbox'
 // @ts-ignore
 import MapboxGLDraw from '@mapbox/mapbox-gl-draw'
 // @ts-ignore
@@ -17,35 +17,64 @@ MapboxGL.accessToken = import.meta.env.VITE_MAPBOX_PUBLIC_ACCESS_TOKEN
 export default defineComponent({
   props: {
     modelValue: {
-      type: Object,
+      type: Object as PropType<MapboxPosition>,
       required: true
     },
     markerPosition: {
-      type: Object,
+      type: Object as PropType<MapboxPosition>,
       required: true
     },
+    drawingPlugin: Boolean,
+    isochronePlugin: Boolean,
     isochroneValues: {
       type: Object as PropType<IsochroneData>
     }
   },
   emits: [ 'update:modelValue', 'map:loaded' ],
   setup(props, { emit }) {
+    const isochroneSourceName: string = 'isochrone_source'
+    const isochroneLayerName: string = 'isochrone_layer'
     const mapboxState = useMapboxState()
     const { marker } = storeToRefs(mapboxState)
-    const mapContainer = ref<HTMLElement | null>(null)
+    const mapContainerRef = ref<HTMLElement | null>(null)
     const map = ref<Map | undefined>()
     const mapDrawer = ref<MapboxGLDraw | undefined>()
 
-    watch(() => props.isochroneValues, (data) => {
-      if (!map.value || !props.isochroneValues || !data) {
+    watch(() => props.isochronePlugin, (isActive: boolean) => {
+      if (!map.value) {
         return
       }
 
-      createIsochroneLayers(data)
+      if (isActive) {
+        enableIsochronePlugin()
+      } else {
+        disableIsochronePlugin()
+      }
+    })
+
+    watch(() => props.drawingPlugin, (isActive: boolean) => {
+      if (!map.value) {
+        return
+      }
+
+      if (isActive) {
+        enableDrawingPlugin()
+      } else {
+        disableDrawingPlugin()
+      }
+    })
+
+    watch(() => props.isochroneValues, (data) => {
+      if (!props.isochroneValues || !map.value || !data) {
+        return
+      }
+
+
+      attachIsochroneLayerToSource(isochroneSourceName, data)
     }, { deep: true })
 
     onMounted(() => {
-      if (!mapContainer.value) {
+      if (!mapContainerRef.value) {
         return
       }
 
@@ -53,7 +82,7 @@ export default defineComponent({
 
       map.value = new Map({
         style: 'mapbox://styles/mapbox/outdoors-v12',
-        container: mapContainer.value,
+        container: mapContainerRef.value,
         center: [ lng, lat ],
         bearing,
         pitch,
@@ -71,6 +100,20 @@ export default defineComponent({
       map.value.remove()
       map.value = undefined
     })
+
+    const configurePlugins = () => {
+      if (props.drawingPlugin) {
+        enableDrawingPlugin()
+      } else {
+        disableDrawingPlugin()
+      }
+
+      if (props.isochronePlugin) {
+        enableIsochronePlugin()
+      } else {
+        disableIsochronePlugin()
+      }
+    }
 
     const getMapView = () => {
       if (!map.value) {
@@ -104,6 +147,24 @@ export default defineComponent({
       })
     }
 
+    const enableDrawingPlugin = () => {
+      configureDrawingPlugin()
+
+      if (!mapDrawer.value || !map.value) {
+        return
+      }
+
+      map.value?.addControl(mapDrawer.value, 'bottom-right')
+    }
+
+    const disableDrawingPlugin = () => {
+      if (!mapDrawer.value) {
+        return
+      }
+
+      map.value?.removeControl(mapDrawer.value)
+    }
+
     const configureDrawingPlugin = () => {
       if (!map.value) {
         return
@@ -119,59 +180,83 @@ export default defineComponent({
         }
       })
 
-      map.value?.addControl(mapDrawer.value, 'bottom-right')
     }
 
-    const createIsochroneLayers = (data: IsochroneData) => {
+    const enableIsochronePlugin = () => {
       if (!map.value) {
         return
       }
-      const source: AnySourceImpl = map.value?.getSource('isochrone_layer')
 
-      if (!source) {
-        map.value?.addSource('isochrone_layer', {
-          type: 'geojson',
-          data: data as any
-        })
-
-        map.value?.addLayer(
-            {
-              id: 'isoLayer',
-              type: 'fill',
-              // Use "iso" as the data source for this layer
-              source: 'isochrone_layer',
-              layout: {},
-              paint: {
-                // The fill color for the layer is set to a light purple
-                'fill-color': data.features[0].properties.fillColor,
-                'fill-opacity': data.features[0].properties.fillOpacity
-              }
-            }
-        )
-
-        map.value?.on('click', 'isoLayer', (e: any) => {
-          console.log('isoLayer clicked :: ', e)
-
-          // Copy coordinates array.
-          const coordinates: LngLatLike = [ marker.value.lng, marker.value.lat ]
-          const description = 'This is an ISO layer'
-
-          // Ensure that if the map is zoomed out such that multiple
-          // copies of the feature are visible, the popup appears
-          // over the copy being pointed to.
-          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : - 360
-          }
-
-          new MapboxGL.Popup()
-              .setLngLat(coordinates)
-              .setHTML(description)
-              .addTo(map.value!)
-
-        })
-      } else {
-        (source as GeoJSONSource).setData(data as any)
+      if (map.value?.getSource(isochroneSourceName)) {
+        return
       }
+
+      map.value?.addSource(isochroneSourceName, {
+        type: 'geojson',
+        data: {
+          features: [],
+          type: 'FeatureCollection'
+        }
+      })
+    }
+
+    const disableIsochronePlugin = () => {
+      if (!map.value) {
+        return
+      }
+
+      map.value?.removeLayer(isochroneLayerName)
+      map.value?.removeSource(isochroneSourceName)
+    }
+
+    const attachIsochroneLayerToSource = (sourceName: string, data: IsochroneData) => {
+
+      if (!map.value) {
+        return
+      }
+
+      const source: AnySourceImpl = map.value?.getSource(isochroneSourceName)
+
+      if (map.value?.getLayer(isochroneLayerName)) {
+        map.value?.removeLayer(isochroneLayerName)
+      }
+
+      map.value?.addLayer(
+          {
+            id: isochroneLayerName,
+            type: 'fill',
+            // Use "iso" as the data source for this layer
+            source: sourceName,
+            layout: {},
+            paint: {
+              // The fill color for the layer is set to a light purple
+              'fill-color': data.features[0].properties.fillColor,
+              'fill-opacity': data.features[0].properties.fillOpacity
+            }
+          }
+      )
+      map.value?.on('click', isochroneLayerName, (e: any) => {
+        console.log('isoLayer clicked :: ', e)
+
+        // Copy coordinates array.
+        const coordinates: LngLatLike = [ marker.value.lng, marker.value.lat ]
+        const description = 'This is an ISO layer'
+
+        // Ensure that if the map is zoomed out such that multiple
+        // copies of the feature are visible, the popup appears
+        // over the copy being pointed to.
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : - 360
+        }
+
+        new MapboxGL.Popup()
+            .setLngLat(coordinates)
+            .setHTML(description)
+            .addTo(map.value!)
+
+      });
+
+      (source as GeoJSONSource).setData(data as any)
     }
 
     const initMapListeners = () => {
@@ -189,13 +274,13 @@ export default defineComponent({
       initMapListeners()
 
       configureCurrentPositionMarker()
-      configureDrawingPlugin()
+      configurePlugins()
 
       emit('map:loaded')
     }
 
     return {
-      mapContainer,
+      mapContainerRef,
       map
     }
   }
