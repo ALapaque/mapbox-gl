@@ -33,8 +33,8 @@ const defaultState = (): MapboxState => ({
   marker: defaultPosition,
   mapView: defaultPosition,
   plugins: {
-    drawShapes: true,
-    isochrone: true
+    drawShapes: false,
+    isochrone: false
   }
 })
 

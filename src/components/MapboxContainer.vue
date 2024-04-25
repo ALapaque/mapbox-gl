@@ -33,6 +33,7 @@ export default defineComponent({
     const { data: isochroneData, settings } = storeToRefs(isochroneState)
 
     watch([ markerPosition, settings, plugins ], async() => {
+      console.log('MapboxContainer > watcher > [ markerPosition, settings, plugins ] ')
       if (!plugins.value.isochrone) {
         return
       }

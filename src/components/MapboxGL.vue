@@ -38,9 +38,14 @@ export default defineComponent({
     const { marker } = storeToRefs(mapboxState)
     const mapContainerRef = ref<HTMLElement | null>(null)
     const map = ref<Map | undefined>()
-    const mapDrawer = ref<MapboxGLDraw | undefined>()
+    const mapDrawer = ref<MapboxGLDraw | undefined>(new MapboxGLDraw({
+      // this is used to allow for custom properties for styling
+      // it appends the word "user_" to the property
+      userProperties: true
+    }))
 
     watch(() => props.isochronePlugin, (isActive: boolean) => {
+      console.log('MapboxGL > watcher > () => props.isochronePlugin ')
       if (!map.value) {
         return
       }
@@ -53,6 +58,7 @@ export default defineComponent({
     })
 
     watch(() => props.drawingPlugin, (isActive: boolean) => {
+      console.log('MapboxGL > watcher > () => props.drawingPlugin ')
       if (!map.value) {
         return
       }
@@ -65,10 +71,10 @@ export default defineComponent({
     })
 
     watch(() => props.isochroneValues, (data) => {
+      console.log('MapboxGL > watcher > () => props.isochroneValues ')
       if (!props.isochroneValues || !map.value || !data) {
         return
       }
-
 
       attachIsochroneLayerToSource(isochroneSourceName, data)
     }, { deep: true })
@@ -81,7 +87,6 @@ export default defineComponent({
       const { lng, lat, zoom, bearing, pitch } = props.modelValue
 
       map.value = new Map({
-        style: 'mapbox://styles/mapbox/outdoors-v12',
         container: mapContainerRef.value,
         center: [ lng, lat ],
         bearing,
@@ -148,8 +153,6 @@ export default defineComponent({
     }
 
     const enableDrawingPlugin = () => {
-      configureDrawingPlugin()
-
       if (!mapDrawer.value || !map.value) {
         return
       }
@@ -158,36 +161,17 @@ export default defineComponent({
     }
 
     const disableDrawingPlugin = () => {
-      if (!mapDrawer.value) {
+      if (!mapDrawer.value || !map.value) {
         return
       }
 
-      map.value?.removeControl(mapDrawer.value)
-    }
-
-    const configureDrawingPlugin = () => {
-      if (!map.value) {
-        return
+      if (map.value?.hasControl(mapDrawer.value)) {
+        map.value?.removeControl(mapDrawer.value)
       }
-
-      mapDrawer.value = new MapboxGLDraw({
-        // this is used to allow for custom properties for styling
-        // it appends the word "user_" to the property
-        userProperties: true,
-        controls: {
-          'combine_features': false,
-          'uncombine_features': false
-        }
-      })
-
     }
 
     const enableIsochronePlugin = () => {
-      if (!map.value) {
-        return
-      }
-
-      if (map.value?.getSource(isochroneSourceName)) {
+      if (!map.value || map.value?.getSource(isochroneSourceName)) {
         return
       }
 
@@ -205,12 +189,17 @@ export default defineComponent({
         return
       }
 
-      map.value?.removeLayer(isochroneLayerName)
-      map.value?.removeSource(isochroneSourceName)
+
+      if (map.value?.getLayer(isochroneLayerName)) {
+        map.value?.removeLayer(isochroneLayerName)
+      }
+
+      if (map.value?.getSource(isochroneSourceName)) {
+        map.value?.removeSource(isochroneSourceName)
+      }
     }
 
     const attachIsochroneLayerToSource = (sourceName: string, data: IsochroneData) => {
-
       if (!map.value) {
         return
       }
