@@ -111,6 +111,7 @@ export default defineComponent({
       const { lng, lat, zoom, bearing, pitch } = props.modelValue
 
       map.value = new Map({
+        style: 'mapbox://styles/alarestomax/clvgm9ap900u201o0699nhn83',
         container: mapContainerRef.value,
         center: [ lng, lat ],
         bearing,
