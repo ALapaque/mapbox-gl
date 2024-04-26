@@ -8,9 +8,10 @@
     </div>
     <div id='mode' ref='drawingMethodSelectRef'>
       <DrawMethodSelector
-          v-if='mapDrawer && map && drawPluginEnabled'
+          v-if='map && mapDrawer && mapDrawerModes && drawPluginEnabled'
           :map='map'
-          :mapDrawer='mapDrawer' />
+          :mapDrawer='mapDrawer'
+          :mapDrawerModes='mapDrawerModes' />
     </div>
   </div>
 </template>
@@ -27,8 +28,6 @@ import MapboxGLDraw from '@mapbox/mapbox-gl-draw'
 import MapboxGL, { type AnySourceImpl, type FillLayer, GeoJSONSource, type LngLatLike, Map, Marker } from 'mapbox-gl'
 // @ts-ignore
 import * as MapboxDrawGeodesic from 'mapbox-gl-draw-geodesic'
-// @ts-ignore
-import * as MapboxDrawWaypoint from 'mapbox-gl-draw-waypoint'
 import { storeToRefs } from 'pinia'
 import { computed, defineComponent, onMounted, onUnmounted, type PropType, ref, watch } from 'vue'
 
@@ -75,20 +74,20 @@ export default defineComponent({
     const mapContainerRef = ref<HTMLElement | null>()
     const map = ref<Map | undefined>()
     const drawPluginEnabled = ref<boolean>(false)
+    const mapDrawerModes = ref<MapboxDrawGeodesic.modes | undefined>()
     const mapDrawer = computed<MapboxGLDraw | undefined>(() => {
       let modes = MapboxGLDraw.modes
-
       modes = MapboxDrawGeodesic.enable(modes)
-      modes = MapboxDrawWaypoint.enable(modes)
 
-      console.log('mapDrawer instantiation :: ', modes)
+      // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+      mapDrawerModes.value = modes
 
       return new MapboxGLDraw({
-        // this is used to allow for custom properties for styling
-        // it appends the word "user_" to the property
-        userProperties: true,
         modes: modes as any,
-        displayControlsDefault: true
+        displayControlsDefault: false,
+        controls: {
+          trash: true
+        }
       })
     })
     const layerSelected = ref<FillLayer | undefined>()
@@ -171,9 +170,6 @@ export default defineComponent({
       }
 
       map.value?.addControl(mapDrawer.value, 'bottom-right')
-
-      const circle = MapboxDrawGeodesic.createCircle([ props.markerPosition.lng, props.markerPosition.lat ], settings.value.distance / 100)
-      mapDrawer.value?.add(circle)
     }
 
     const disableDrawingPlugin = () => {
@@ -307,7 +303,8 @@ export default defineComponent({
       mapDrawer,
       layerSelected,
       drawPluginEnabled,
-      popupClicked,
+      mapDrawerModes,
+      popupClicked
     }
   }
 })
