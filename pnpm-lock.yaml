@@ -14,6 +14,12 @@ importers:
       mapbox-gl:
         specifier: ^3.3.0
         version: 3.3.0
+      mapbox-gl-draw-geodesic:
+        specifier: ^2.3.1
+        version: 2.3.1(@mapbox/mapbox-gl-draw@1.4.3)
+      mapbox-gl-draw-waypoint:
+        specifier: ^1.2.3
+        version: 1.2.3(@mapbox/mapbox-gl-draw@1.4.3)
       pinia:
         specifier: ^2.1.7
         version: 2.1.7(typescript@5.4.5)(vue@3.4.24(typescript@5.4.5))
@@ -810,6 +816,10 @@ packages:
     resolution: { integrity: sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug== }
     engines: { node: '>=12' }
 
+  arc@0.1.4:
+    resolution: { integrity: sha512-aPE8qoZ64NR6zCMN+WFNvLmsv74OfEWGZGV90odFGUKSTILqm2I81Zkyfy+7uw0UjEfGbIBMIilChAHCrgMdmQ== }
+    engines: { node: '>=0.4.0' }
+
   argparse@2.0.1:
     resolution: { integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q== }
 
@@ -1162,6 +1172,9 @@ packages:
     resolution: { integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg== }
     engines: { node: '>=6.9.0' }
 
+  geodesy-fn@1.1.0:
+    resolution: { integrity: sha512-7IX4n+6cnhnKt07bMMa0BlXKKu9X8cQjZmz8hbaV2t03nspxy6G6lieVn70WvJ4G8MBbiX+sB3qlZ9WSfVCDIQ== }
+
   geojson-flatten@1.1.1:
     resolution: { integrity: sha512-k/6BCd0qAt7vdqdM1LkLfAy72EsLDy0laNwX0x2h49vfYCiQkRc4PSra8DNEdJ10EKRpwEvDXMb0dBknTJuWpQ== }
 
@@ -1464,6 +1477,16 @@ packages:
 
   magic-string@0.30.10:
     resolution: { integrity: sha512-iIRwTIf0QKV3UAnYK4PU8uiEc4SRh5jX0mwpIwETPpHdhVM4f53RSwS/vXvN1JhGX+Cs7B8qIq3d6AH49O5fAQ== }
+
+  mapbox-gl-draw-geodesic@2.3.1:
+    resolution: { integrity: sha512-Qqy+IAdPf802EpH1p0rynsu2cJfJ/kc/ifokHL0dNo3WPM2Z9Sj2ZDVMTtxeTwC1o+dU1eC1OmnL8qJCXxq+uQ== }
+    peerDependencies:
+      '@mapbox/mapbox-gl-draw': ^1.4.3
+
+  mapbox-gl-draw-waypoint@1.2.3:
+    resolution: { integrity: sha512-O6vAAKjPTcTyPth0Y4DI/QDLljFitRYM5f3iGgTNNgJa/KKPd1MrqbM0h5HPQ6EfTWpUGG878dsIsMq8agOUsw== }
+    peerDependencies:
+      '@mapbox/mapbox-gl-draw': ^1.4.3
 
   mapbox-gl@3.3.0:
     resolution: { integrity: sha512-cVeAu9PxPTx113AnJAzcSKbBtL5F5EpJ6/NuYgNib9zNduNSoDG2oVX6xK0bAP/VwwVwRh9SEhcyM7nh4GThvQ== }
@@ -2808,6 +2831,8 @@ snapshots:
 
   ansi-styles@6.2.1: { }
 
+  arc@0.1.4: { }
+
   argparse@2.0.1: { }
 
   array-buffer-byte-length@1.0.1:
@@ -3263,6 +3288,8 @@ snapshots:
 
   gensync@1.0.0-beta.2: { }
 
+  geodesy-fn@1.1.0: { }
+
   geojson-flatten@1.1.1: { }
 
   geojson-vt@3.2.1: { }
@@ -3530,6 +3557,17 @@ snapshots:
   magic-string@0.30.10:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
+
+  mapbox-gl-draw-geodesic@2.3.1(@mapbox/mapbox-gl-draw@1.4.3):
+    dependencies:
+      '@mapbox/mapbox-gl-draw': 1.4.3
+      arc: 0.1.4
+      geodesy-fn: 1.1.0
+      hat: 0.0.3
+
+  mapbox-gl-draw-waypoint@1.2.3(@mapbox/mapbox-gl-draw@1.4.3):
+    dependencies:
+      '@mapbox/mapbox-gl-draw': 1.4.3
 
   mapbox-gl@3.3.0:
     dependencies:

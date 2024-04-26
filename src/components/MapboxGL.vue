@@ -6,10 +6,17 @@
           :layerName='layerSelected.id'
           :mapInstance='map' />
     </div>
+    <div id='mode' ref='drawingMethodSelectRef'>
+      <DrawMethodSelector
+          v-if='mapDrawer && map && drawPluginEnabled'
+          :map='map'
+          :mapDrawer='mapDrawer' />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
+import DrawMethodSelector from '@/components/draw/DrawMethodSelector.vue'
 import LayerSettingsEditionPopup from '@/components/popups/LayerSettingsEditionPopup.vue'
 import type { IsochroneData } from '@/models/isochrone/IsochroneData'
 import useIsochroneState from '@/stores/isochrone'
@@ -18,8 +25,13 @@ import useMapboxState, { type MapboxPosition } from '@/stores/mapbox'
 import MapboxGLDraw from '@mapbox/mapbox-gl-draw'
 // @ts-ignore
 import MapboxGL, { type AnySourceImpl, type FillLayer, GeoJSONSource, type LngLatLike, Map, Marker } from 'mapbox-gl'
+// @ts-ignore
+import * as MapboxDrawGeodesic from 'mapbox-gl-draw-geodesic'
+// @ts-ignore
+import * as MapboxDrawWaypoint from 'mapbox-gl-draw-waypoint'
 import { storeToRefs } from 'pinia'
-import { defineComponent, onMounted, onUnmounted, type PropType, ref, watch } from 'vue'
+import { computed, defineComponent, onMounted, onUnmounted, type PropType, ref, watch } from 'vue'
+
 
 MapboxGL.accessToken = import.meta.env.VITE_MAPBOX_PUBLIC_ACCESS_TOKEN
 
@@ -37,7 +49,7 @@ export type MapboxGLType = {
 }
 
 export default defineComponent({
-  components: { LayerSettingsEditionPopup },
+  components: { DrawMethodSelector, LayerSettingsEditionPopup },
   props: {
     modelValue: {
       type: Object as PropType<MapboxPosition>,
@@ -62,13 +74,26 @@ export default defineComponent({
     const { settings } = storeToRefs(isochroneState)
     const mapContainerRef = ref<HTMLElement | null>()
     const map = ref<Map | undefined>()
-    const mapDrawer = ref<MapboxGLDraw | undefined>(new MapboxGLDraw({
-      // this is used to allow for custom properties for styling
-      // it appends the word "user_" to the property
-      userProperties: true
-    }))
+    const drawPluginEnabled = ref<boolean>(false)
+    const mapDrawer = computed<MapboxGLDraw | undefined>(() => {
+      let modes = MapboxGLDraw.modes
+
+      modes = MapboxDrawGeodesic.enable(modes)
+      modes = MapboxDrawWaypoint.enable(modes)
+
+      console.log('mapDrawer instantiation :: ', modes)
+
+      return new MapboxGLDraw({
+        // this is used to allow for custom properties for styling
+        // it appends the word "user_" to the property
+        userProperties: true,
+        modes: modes as any,
+        displayControlsDefault: true
+      })
+    })
     const layerSelected = ref<FillLayer | undefined>()
     const layerSettingsEditionPopupRef = ref<HTMLDivElement | null>()
+    const drawingMethodSelectRef = ref<HTMLDivElement | null>()
 
     watch(() => props.isochroneValues, (data) => {
       console.log('MapboxGL > watcher > () => props.isochroneValues ')
@@ -139,14 +164,21 @@ export default defineComponent({
     }
 
     const enableDrawingPlugin = () => {
+      drawPluginEnabled.value = true
+
       if (!mapDrawer.value || !map.value) {
         return
       }
 
       map.value?.addControl(mapDrawer.value, 'bottom-right')
+
+      const circle = MapboxDrawGeodesic.createCircle([ props.markerPosition.lng, props.markerPosition.lat ], settings.value.distance / 100)
+      mapDrawer.value?.add(circle)
     }
 
     const disableDrawingPlugin = () => {
+      drawPluginEnabled.value = false
+
       if (!mapDrawer.value || !map.value) {
         return
       }
@@ -270,9 +302,12 @@ export default defineComponent({
     return {
       layerSettingsEditionPopupRef,
       mapContainerRef,
-      popupClicked,
+      drawingMethodSelectRef,
+      map,
+      mapDrawer,
       layerSelected,
-      map
+      drawPluginEnabled,
+      popupClicked,
     }
   }
 })
