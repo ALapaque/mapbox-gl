@@ -62,10 +62,11 @@ export default defineComponent({
       })
 
       props.map.on('draw.create', (event) => {
+        console.log('drag.create :: ', event)
         const geojson = event.features[0]
-        console.log('create', geojson)
 
         if (MapboxDrawGeodesic.isCircle(geojson)) {
+          console.log('MapboxDrawGeodesic', MapboxDrawGeodesic)
           const center = MapboxDrawGeodesic.getCircleCenter(geojson)
           const radius = MapboxDrawGeodesic.getCircleRadius(geojson)
           console.log('circle', 'center', center, 'radius', radius)

@@ -239,7 +239,7 @@ export default defineComponent({
       map.value?.addLayer(layer)
 
       map.value?.on('click', isochroneLayerName, (e: any) => {
-        console.log('isoLayer clicked :: ', e)
+        console.log(`${isochroneLayerName} clicked :: `, e)
         layerSelected.value = map.value?.getLayer(isochroneLayerName) as FillLayer
 
         const coordinates: LngLatLike = [ marker.value.lng, marker.value.lat ]
@@ -255,9 +255,9 @@ export default defineComponent({
             .on('close', () => {
               layerSelected.value = undefined
             })
-      });
+      })
 
-      (source as GeoJSONSource).setData(data as any)
+      ;(source as GeoJSONSource).setData(data as any)
     }
 
     const initMapListeners = () => {
@@ -277,10 +277,6 @@ export default defineComponent({
       configureCurrentPositionMarker()
 
       emit('map:loaded')
-    }
-
-    const popupClicked = () => {
-      console.log('popup clicked')
     }
 
     expose({
@@ -304,8 +300,7 @@ export default defineComponent({
       mapDrawer,
       layerSelected,
       drawPluginEnabled,
-      mapDrawerModes,
-      popupClicked
+      mapDrawerModes
     }
   }
 })
